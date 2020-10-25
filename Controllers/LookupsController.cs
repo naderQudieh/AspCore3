@@ -22,8 +22,13 @@ namespace AppZeroAPI.Controllers
             this.unitOfWork = unitOfWork;
         }
 
+        [HttpGet()]
+        public IActionResult  Get()
+        {
+            return Ok("LookupsController");
+        }
 
-        [HttpGet("/countries")]
+        [HttpGet("countries")]
         public async Task<IActionResult> GetCountries()
         {
             
@@ -31,7 +36,7 @@ namespace AppZeroAPI.Controllers
             return AppResponse.Success(data);
         }
 
-        [HttpGet("/states")]
+        [HttpGet("states")]
         public async Task<IActionResult> GetStates()
         {
         
@@ -39,7 +44,7 @@ namespace AppZeroAPI.Controllers
             return AppResponse.Success(data);
         }
 
-        [HttpGet("/languages")]
+        [HttpGet("languages")]
         public async Task<IActionResult> GetLanguages()
         { 
             var data = await unitOfWork.Lookups.GetLanguages();

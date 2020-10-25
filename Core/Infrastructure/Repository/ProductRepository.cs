@@ -57,8 +57,8 @@ namespace AppZeroAPI.Repository
         }
         private async Task<int> AddAsync2(Product entity)
         {
-            entity.date_created = DateTime.Now;
-            entity.date_modified = DateTime.Now;
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             var sql = "Insert into Products (Name,Description,Barcode,Rate,AddedOn) VALUES (@Name,@Description,@Barcode,@Rate,@AddedOn)";
             using (var connection = this.GetOpenConnection())
             {
@@ -108,7 +108,7 @@ namespace AppZeroAPI.Repository
 
         public async Task<bool> UpdateAsync(Product entity)
         {
-            entity.date_modified = DateTime.Now;
+            entity.date_modified = DateTime.UtcNow;
             var sql = "UPDATE Products SET Name = @Name, Description = @Description, Barcode = @Barcode, Rate = @Rate, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
             using (var connection = this.GetOpenConnection())
             {

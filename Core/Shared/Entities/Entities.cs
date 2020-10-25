@@ -15,9 +15,9 @@ namespace AppZeroAPI.Entities
     }
 
     [Table("customer_carts")]
-    public class Cart
+    public class CustomerCart
     {
-        public long cart_id { get; set; }
+        public string cart_id { get; set; }
         public long customer_id { get; set; }
         public decimal cart_total { get; set; }
         public decimal cart_discount { get; set; }
@@ -32,7 +32,7 @@ namespace AppZeroAPI.Entities
     [Table("customer_cart_items")]
     public class CartItem
     {
-        public long cart_id { get; set; }
+        public string cart_id { get; set; }
         public long product_id { get; set; }
         public decimal qty { get; set; }
         public decimal price { get; set; }

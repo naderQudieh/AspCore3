@@ -1,16 +1,28 @@
 ﻿using AppZeroAPI.Entities;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace AppZeroAPI.Controllers
 {
-    public abstract class BaseController : ControllerBase
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public  class BaseController : ControllerBase
     {
+        
+        public BaseController( )  {  
+        }
+
+      
         protected async Task<UserProfile> CurrentUser()
-        {
+        { 
             var accessToken = await HttpContext.GetTokenAsync("access_token");
             UserProfile user = null;// await _userRepository.FirstOrDefaultAsync(x => x.Authentication.AccessToken == accessToken)
                                     //?? throw new UnauthorizedAccessException();
@@ -56,6 +68,27 @@ namespace AppZeroAPI.Controllers
         {
             return 1;
             // return tokenHandler.GetSubValue(GetAuthorizationHeaderValue());
+        }
+
+        protected List<Claim> GetJwtClaims(string jwt)
+        {
+            var claims = new List<Claim>();
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(jwt);
+            var token = handler.ReadToken(jwt) as JwtSecurityToken; 
+            return ((List<Claim>)token?.Claims);
+        }
+        protected int GetUserIdFromToken()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var claims = identity.Claims;
+            var nameIdentifier = claims.SingleOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+            if (nameIdentifier == null)
+            {
+                return -1;
+            }
+            var id = nameIdentifier.Value;
+            return Convert.ToInt32(id);
         }
     }
 }

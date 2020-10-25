@@ -20,12 +20,12 @@ namespace AppZeroAPI.Services
     {
         private const string UserIdKey = "id";
         private readonly ILogger<AuthService> logger;
-        protected readonly ITokenService tokenService;
+        protected readonly TokenService tokenService;
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper _mapper;
 
         public AuthService(IConfiguration configuration, ILogger<AuthService> logger,
-            IUnitOfWork unitOfWork, ITokenService tokenService, IMapper mapper) : base(configuration)
+            IUnitOfWork unitOfWork, TokenService tokenService, IMapper mapper) : base(configuration)
         {
             _mapper = mapper;
             this.unitOfWork = unitOfWork;
@@ -81,7 +81,7 @@ namespace AppZeroAPI.Services
 
         public async Task<ResponseAuthDto> RenewAccessToken(RequestAuthDto request, string ipAddress = "")
         {
-            JwtSecurityToken decodedToken = this.tokenService.decodeToken(request.RefreshToken);
+            JwtSecurityToken decodedToken = this.tokenService.DecodeToken(request.RefreshToken);
             var user = await this.unitOfWork.Users.GetByIdAsync(int.Parse(decodedToken.Subject));
             if (user == null)
                 throw new AppException("Invalid token.");
@@ -188,7 +188,7 @@ namespace AppZeroAPI.Services
 
         public async Task<bool> RevokeToken(string token)
         {
-            JwtSecurityToken decodedToken = this.tokenService.decodeToken(token);
+            JwtSecurityToken decodedToken = this.tokenService.DecodeToken(token);
             int userId = int.Parse(decodedToken.Id);
             var user = await this.unitOfWork.Users.GetByIdAsync(userId);
             if (user == null)

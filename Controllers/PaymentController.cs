@@ -23,7 +23,11 @@ namespace AppZeroAPI.Controllers
             this.unitOfWork = unitOfWork;
         }
 
-
+        [HttpGet()]
+        public IActionResult Get()
+        {
+            return Ok("PaymentController");
+        }
         [HttpGet("/pmt/{customer_id}/{payment_id}")]
         public async Task<IActionResult> GetCustomerPayment([FromQuery] long customer_id,string payment_id)
         { 

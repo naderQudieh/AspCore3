@@ -20,8 +20,13 @@ namespace AppZeroAPI.Controllers
             throw new AppException("Invalid Token");
         }
         // GET: api/<TestController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpGet()]
+        public IActionResult Get()
+        {
+            return Ok("TestController");
+        }
+        [HttpGet("test1")]
+        public IEnumerable<string> GetTest1()
         {
 
             return new string[] { "value1", "value2" };

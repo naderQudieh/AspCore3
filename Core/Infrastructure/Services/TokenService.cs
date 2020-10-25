@@ -17,7 +17,7 @@ namespace AppZeroAPI.Services
 
 
 
-    public class TokenService : ITokenService
+    public class TokenService  
     {
         private JwtSecurityTokenHandler tokenhandler = new JwtSecurityTokenHandler();
         private const string UserIdKey = "id";
@@ -110,9 +110,9 @@ namespace AppZeroAPI.Services
 
 
 
-        public string getValue(string accessToken, string keyOrClaimType)
+        public string getClaimTypeValue(string accessToken, string keyOrClaimType)
         {
-            var jwt = decodeToken(accessToken);
+            var jwt = DecodeToken(accessToken);
             if (jwt == null)
             {
                 return null;
@@ -125,11 +125,7 @@ namespace AppZeroAPI.Services
             return claim.Value;
         }
 
-        public JwtSecurityToken decodeToken(string token)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            return handler.ReadJwtToken(token);
-        }
+       
         public ClaimsPrincipal getPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -152,7 +148,13 @@ namespace AppZeroAPI.Services
                 return null;
             }
         }
-
+        public JwtSecurityToken DecodeToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            if (string.IsNullOrEmpty(token))
+                throw new AppException("Invalid token");
+            return tokenHandler.ReadJwtToken(token);
+        }
         private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
         {
             return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
@@ -213,13 +215,7 @@ namespace AppZeroAPI.Services
 
 
 
-        private JwtSecurityToken gecodeToken(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            if (string.IsNullOrEmpty(token))
-                throw new AppException("Invalid token");
-            return tokenHandler.ReadJwtToken(token);
-        }
+       
 
         private string getUserIdFromBearer(string bearer)
         {
@@ -230,6 +226,22 @@ namespace AppZeroAPI.Services
             return userid;
         }
 
+        public bool ValidateToken(string userId, string token)
+        {
+            try
+            {
+                var principal =  getPrincipalFromToken(token);
 
+                var id = principal.Identity.Name;
+
+                if (userId == id) return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return false;
+        }
     }
 }

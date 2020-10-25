@@ -82,7 +82,7 @@ namespace AppZeroAPI.Repository
        
         public async Task<bool> UpdateAsync(Customer entity)
         {
-            // entity.ModifiedOn = DateTime.Now;
+            // entity.ModifiedOn = DateTime.UtcNow;
             var sql = "UPDATE Orders SET Name = @Name, Description = @Description, Barcode = @Barcode, Rate = @Rate, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
             using (var connection = this.GetOpenConnection())
             {
@@ -90,33 +90,32 @@ namespace AppZeroAPI.Repository
                 return rows !=0 ;
             }
         }
-      
-       
 
-        public async Task<long> AddCart(Cart entity)
+
+        public async Task<int> AddCart(CustomerCart entity)
         {
-            var sql = @"INSERT INTO customer_carts (customer_id, date_created, date_modified)
-                             VALUES (@customer_id, @date_created, @date_modified);
-                             SELECT SCOPE_IDENTITY()";
+            entity.cart_id = Guid.NewGuid().ToString().Replace("-", "").ToLower();
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             using (var connection = this.GetOpenConnection())
             {
-                entity.cart_id = await connection.ExecuteScalarAsync<long>(sql, entity );
-                return entity.cart_id;
+                //entity.AddedOn = DateTime.UtcNow;
+                var result = await connection.InsertAsync(entity);
+                return result;
             }
-
         }
-        public async Task<long> AddCartItem(CartItem  entity)
+        public async Task<int> AddCartItem(CartItem entity)
         {
-            var sql = @"INSERT INTO customer_carts_items (cart_id, cart_item_id,product_id,qty, date_modified)
-                             VALUES (@cart_id, @cart_item_id,@product_id,@qty, @date_modified);
-                             SELECT SCOPE_IDENTITY()";
+            entity.cart_id = Guid.NewGuid().ToString().Replace("-", "").ToLower();
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             using (var connection = this.GetOpenConnection())
-            {
-                entity.cart_id = await connection.ExecuteScalarAsync<long>(sql, entity);
-                return entity.cart_id;
+            { 
+                var result = await connection.InsertAsync(entity);
+                return result;
             }
-
         }
+        
         public async Task<bool> UpdateCartItem(CartItem entity)
         {
             var sql = @"UPDATE customer_carts_items
@@ -162,7 +161,7 @@ namespace AppZeroAPI.Repository
         }
         public async Task<int> DeleteExpiredShoppingCartItems( )
         {
-            DateTime expdate = DateTime.Now.AddDays(-60);
+            DateTime expdate = DateTime.UtcNow.AddDays(-60);
             var sql = "delete from customer_carts WHERE date_created > @date_created; ";
             using (var connection = this.GetOpenConnection())
             {
@@ -181,7 +180,7 @@ namespace AppZeroAPI.Repository
             }
         }
 
-        public async Task<Cart> GetCustomerCartAndCartItems(long customer_id, bool includeItems = false)
+        public async Task<CustomerCart> GetCustomerCartAndCartItems(long customer_id, bool includeItems = false)
         {
             using (var connection = this.GetOpenConnection())
             {
@@ -191,7 +190,7 @@ namespace AppZeroAPI.Repository
                                 FROM customer_carts
                                 WHERE customer_id = @customer_id";
 
-                    var result = await connection.QueryAsync<Cart>(sqlQuery, new { customer_id } );
+                    var result = await connection.QueryAsync<CustomerCart>(sqlQuery, new { customer_id } );
 
                     return result.FirstOrDefault();
                 }
@@ -205,7 +204,7 @@ namespace AppZeroAPI.Repository
 
                     var cartItems = new List<CartItem>();
 
-                    var carts = await connection.QueryAsync<Cart, CartItem, Cart>(
+                    var carts = await connection.QueryAsync<CustomerCart, CartItem, CustomerCart>(
                             sqlQuery, (cart, cartItem) =>
                             {
                                 cartItems.Add(cartItem);

@@ -18,7 +18,7 @@ namespace AppZeroAPI.Repository
         }
         public async Task<int> AddLog(LogData entity)
         {
-            entity.MessageOn = DateTime.Now;
+            entity.MessageOn = DateTime.UtcNow;
             var sql = @"Insert into LogData (Category,Message,User,UserId,MessageOn) " +
                 "VALUES (@Category,@Message,@User,@UserId,@MessageOn)";
             using (var connection = this.GetOpenConnection())

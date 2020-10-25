@@ -10,7 +10,7 @@ namespace AppZeroAPI.Controllers
 {
     //[AuthorizeUser]
     [ApiController]
-    [Route("api/Products")]
+    [Route("api/products")]
     public class ProductController : BaseController
     {
         private readonly ILogger<ProductController> logger;
@@ -22,8 +22,13 @@ namespace AppZeroAPI.Controllers
             this.unitOfWork = unitOfWork;
         }
 
+        [HttpGet()]
+        public IActionResult Get()
+        {
+            return Ok("ProductController");
+        }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             logger.LogInformation("called ProductController");

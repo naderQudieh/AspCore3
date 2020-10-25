@@ -47,19 +47,19 @@ namespace AppZeroAPI.Repository
 
         public async Task<int> AddAsync(Order entity)
         {
-            entity.date_created = DateTime.Now;
-            entity.date_modified = DateTime.Now;
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             using (var connection = this.GetOpenConnection())
             {
-                //entity.AddedOn = DateTime.UtcNow;
+                // entity.AddedOn = DateTime.UtcNow;
                 var result = await connection.InsertAsync(entity);
                 return result;
             }
         }
         private async Task<int> AddAsync2(Order entity)
         {
-            entity.date_created = DateTime.Now;
-            entity.date_modified = DateTime.Now;
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             var sql = @"Insert into Orders ( ,name
                         ,description,barcode,qty_in_stock ,unit_price ,imge_url
                         ,department_id,date_created,date_modified
@@ -115,7 +115,7 @@ namespace AppZeroAPI.Repository
 
         public async Task<bool> UpdateAsync(Order entity)
         {
-           // entity.ModifiedOn = DateTime.Now;
+           // entity.ModifiedOn = DateTime.UtcNow;
             var sql = "UPDATE Orders SET Name = @Name, Description = @Description, Barcode = @Barcode, Rate = @Rate, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
             using (var connection = this.GetOpenConnection())
             {

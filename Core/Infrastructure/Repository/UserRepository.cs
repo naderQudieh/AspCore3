@@ -223,7 +223,7 @@ namespace AppZeroAPI.Repository
 
         public async Task<int> AddRefreshTokenAsync(UserTokenData entity)
         {
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
             var sql = @"Insert into user_refresh_tokens ([user_id],[access_token],[refresh_token],[expires_at],black_listed,created_by_ip,[created_at] )
                         VALUES (@user_id,@AccessToken, @RefreshToken,@ExpiresAt,@BlackListed,@CreatedByIP, @CreatedAt)";
             using (var connection = this.GetOpenConnection())

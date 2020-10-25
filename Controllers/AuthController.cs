@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace AppZeroAPI.Controllers
 {
     [ApiController]
-    [Route("api/Auth")]
+    [Route("api/auth")]
     public class AuthController : BaseController
     {
 
@@ -28,7 +28,12 @@ namespace AppZeroAPI.Controllers
             this.logger = logger;
             this.authService = authService;
         }
-
+       
+        [HttpGet()]
+        public IActionResult Get()
+        {
+            return Ok("AuthController");
+        }
 
         [HttpPost]
         [AllowAnonymous]

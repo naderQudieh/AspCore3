@@ -84,8 +84,8 @@ namespace AppZeroAPI.Repository
         public async Task<int> AddCustomerCard(CustomerCreditCard entity)
         {
             entity.card_id = Guid.NewGuid().ToString().Replace("-", "").ToLower();
-            entity.date_created = DateTime.Now;
-            entity.date_modified = DateTime.Now;
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             var sql = @"Insert into customer_cards (  [card_id], [customer_id]
                                ,[card_number]      ,[card_holder_name]
                           ,[card_type]   ,[card_exp_mm]      ,[card_exp_yy]
@@ -102,7 +102,7 @@ namespace AppZeroAPI.Repository
 
         public async Task<bool> UpdateAsync(CustomerCreditCard entity)
         {
-            entity.date_modified = DateTime.Now;
+            entity.date_modified = DateTime.UtcNow;
             var sql = @"UPDATE customer_cards SET card_type = @card_type, date_modified = @date_modified, card_exp_mm = @card_exp_mm, 
              card_exp_yy = @card_exp_yy, card_cvv = @card_cvv, card_status = @card_status  WHERE card_id = @card_id";
             using (var connection = this.GetOpenConnection())

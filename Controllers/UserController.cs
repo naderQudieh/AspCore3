@@ -12,20 +12,26 @@ using System.Threading.Tasks;
 namespace AppZeroAPI.Controllers
 {
     [ApiController]
-    [Route("api/Users")]
+    [Route("api/users")]
     public class UserController : BaseController
     {
         private readonly ILogger<UserController> logger;
         private readonly IUnitOfWork unitOfWork;
 
-
+       
         public UserController(IUnitOfWork unitOfWork, ILogger<UserController> logger)
         {
             this.logger = logger;
             this.unitOfWork = unitOfWork;
         }
 
-        [HttpGet]
+        [HttpGet()]
+        public IActionResult Get()
+        {
+            return Ok("UserController");
+        }
+
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             logger.LogInformation("called Product Controller");
