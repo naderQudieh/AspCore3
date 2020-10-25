@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AppZeroAPI.Entities;
+using AppZeroAPI.Interfaces;
+using AppZeroAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
-
-using AppZeroAPI.Interfaces;
-using AppZeroAPI.Models;
-using AppZeroAPI.Entities;
-using Microsoft.AspNetCore.Authorization;
-using AppZeroAPI.Shared;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Controllers
 {
@@ -20,20 +13,20 @@ namespace AppZeroAPI.Controllers
     [Route("api/Products")]
     public class ProductController : BaseController
     {
-        private readonly ILogger<ProductController>  logger;
+        private readonly ILogger<ProductController> logger;
         private readonly IUnitOfWork unitOfWork;
 
-        public ProductController(IUnitOfWork  unitOfWork, ILogger<ProductController>  logger)
+        public ProductController(IUnitOfWork unitOfWork, ILogger<ProductController> logger)
         {
             this.logger = logger;
             this.unitOfWork = unitOfWork;
         }
 
-     
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            logger.LogInformation("called ProductController"); 
+            logger.LogInformation("called ProductController");
             var data = await unitOfWork.Products.GetAllAsync();
             return AppResponse.Success(data);
         }
@@ -41,24 +34,24 @@ namespace AppZeroAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Product>> GetById(int id)
+        public async Task<ActionResult<Models.Product>> GetById(int id)
         {
             var data = await unitOfWork.Products.GetByIdAsync(id);
-            if (data==null)
+            if (data == null)
             {
-                return NotFound("Product Not Found") ;
+                return NotFound("Product Not Found");
             }
 
             return AppResponse.Success(data);
         }
- 
 
-        [HttpPost]
-        public async Task<IActionResult> Add(Product product)
-        {
-            var data = await unitOfWork.Products.AddAsync(product);
-            return AppResponse.Success(data);
-        }
+
+        //[HttpPost]
+        //public async Task<IActionResult> Add(Models.Product product)
+        //{
+        //    var data = await unitOfWork.Products.AddAsync(product);
+        //    return AppResponse.Success(data);
+        //}
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {
@@ -66,11 +59,13 @@ namespace AppZeroAPI.Controllers
             //await unitOfWork.Products.DeleteByIdAsync(id);
             return AppResponse.Success();
         }
-        [HttpPut]
-        public async Task<IActionResult> Update(Product product)
+
+        [HttpPost] 
+        public async Task<IActionResult> AddProduct(Entities.Product product )
         {
-            var data = await unitOfWork.Products.UpdateAsync(product);
-            return AppResponse.Success(data);
+            var data = await unitOfWork.Products.AddAsync(product); 
+            return Ok();
         }
+        
     }
 }

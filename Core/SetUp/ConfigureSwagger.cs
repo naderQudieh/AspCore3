@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.AspNetCore.Swagger;
+using System.Linq;
 
 namespace AppZeroAPI.Setup
 {
-    public  static partial class SetUp
+    public static partial class SetUp
     {
         public static void ConfigureSwagger(this IServiceCollection services)
         {

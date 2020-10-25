@@ -1,9 +1,6 @@
 ﻿using AppZeroAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppZeroAPI.Middleware
@@ -23,11 +20,12 @@ namespace AppZeroAPI.Middleware
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 var resp = AppResponse.UnauthorizedUser("Authorization Rejection - Token-Expired");
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(resp, Formatting.Indented))  ;
-               
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(resp, Formatting.Indented));
+
 
                 // DO NOT CALL NEXT. THIS SHORTCIRCUITS THE PIPELINE
-            } else  if (context.Response.Headers["Token-Invalid"] == "true")
+            }
+            else if (context.Response.Headers["Token-Invalid"] == "true")
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 var resp = AppResponse.UnauthorizedUser("Authorization Rejection - Token-Invalid");

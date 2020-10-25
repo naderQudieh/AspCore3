@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System;
 using System.IO;
-using System.Security.Cryptography; 
-using System.IdentityModel.Tokens.Jwt; 
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Security.Cryptography;
 
 namespace AppZeroAPI.Services
 {
-    public class EncryptorService  
+    public class EncryptorService
     {
         public string HashPassword(string password, string salt)
         {
@@ -95,7 +94,7 @@ namespace AppZeroAPI.Services
         }
 
         public string GetSecretKey()
-        {  
+        {
             return Convert.ToBase64String(new System.Security.Cryptography.HMACSHA256().Key);
         }
     }

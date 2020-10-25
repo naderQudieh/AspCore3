@@ -1,37 +1,22 @@
 ﻿using AppZeroAPI.Models;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using System.Linq;
-using System.Globalization;
-using System.Security.Cryptography;
-using AppZeroAPI.Entities;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System.Security.Principal;
-using Microsoft.AspNetCore.Identity;
-using System.Threading.Tasks;
 using System.IO;
-using Newtonsoft.Json.Linq;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Converters;
-using System.ComponentModel;
-using System.Text.Json.Serialization;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Shared
-{ 
-   
+{
+
     class JsonUnformatterBinderProvider : IModelBinderProvider
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
@@ -67,10 +52,10 @@ namespace AppZeroAPI.Shared
 
                     if (modelname == "RegisterDto")
                     {
-                        model = JsonConvert.DeserializeObject<RegisterDto>(bodyAsText); 
+                        model = JsonConvert.DeserializeObject<RegisterDto>(bodyAsText);
                     }
                     bindingContext.Result = ModelBindingResult.Success(model);
-                } 
+                }
             }
             return _fallbackBinder.BindModelAsync(bindingContext);
         }
@@ -165,7 +150,7 @@ namespace AppZeroAPI.Shared
             return Convert.ToBase64String(bytes);
         }
 
-       
+
 
         public static string GenerateSalt()
         {
@@ -223,16 +208,16 @@ namespace AppZeroAPI.Shared
             var errorList = query.ToList();
             return errorList;
         }
-        
-         
-        
+
+
+
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
-       
+
         public static long ToTimeStamp(this DateTime dateTime)
         {
             var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -248,9 +233,9 @@ namespace AppZeroAPI.Shared
             }
             return DateTime.MinValue;
         }
-       
+
     }
 
 
-    
+
 }

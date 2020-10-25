@@ -1,25 +1,30 @@
 ﻿using AppZeroAPI.Interfaces;
-using AppZeroAPI.Services;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using AppZeroAPI.Repository;
 
 namespace AppZeroAPI.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        
+
         public IProductRepository Products { get; }
         public IUserRepository Users { get; }
-        
-        public UnitOfWork(  IProductRepository productRepository, IUserRepository userRepository )
-        { 
+        public IOrderRepository Orders { get; }
+        public IPaymentRepository Payments { get; }
+        public ICustomerRepository Customers { get; }
+        public ILookupsRepository Lookups { get; }
+        public UnitOfWork(IProductRepository productRepository, IOrderRepository orderRepository, 
+            IUserRepository userRepository, IPaymentRepository paymentRepository,
+            ICustomerRepository customerRepository, ILookupsRepository lookupsRepository
+
+            )
+        {
+            Payments = paymentRepository;
             Products = productRepository;
             Users = userRepository;
-            
+            Orders = orderRepository;
+            Customers = customerRepository;
+            Lookups = lookupsRepository;
         }
-      
+
     }
 }

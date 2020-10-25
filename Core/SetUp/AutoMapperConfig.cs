@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using AppZeroAPI.Interfaces;
-using AppZeroAPI.Entities;
+﻿using AppZeroAPI.Entities;
 using AppZeroAPI.Models;
-using AutoMapperConfiguration = AutoMapper.Configuration;
-using AutoMapper.Configuration;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
- 
+
 
 namespace AppZeroAPI.Setup
 {
     public static class AutoMapperConfig
     {
-        public static void ConfigureAutoMapper(this IServiceCollection services )
+        public static void ConfigureAutoMapper(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(Startup));
             //var mapperConfig = new MapperConfiguration(mc =>
@@ -23,9 +16,9 @@ namespace AppZeroAPI.Setup
             //    mc.AddProfile(new MappingProfile());
             //});
         }
-       
-        
-        
+
+
+
     }
     public class MappingProfile : Profile
     {
@@ -33,7 +26,7 @@ namespace AppZeroAPI.Setup
         //classes that inherit from the Profile class and load their mapping configurations.
         public MappingProfile()
         {
-             CreateMap<UserProfile, UserInfo>();
+            CreateMap<UserProfile, UserInfo>();
             //CreateMap<UserProfile, UserInfo>()
             //      .ForMember(dest => dest.fname,opt => opt.MapFrom<string>((src, dst) =>
             //      {
@@ -64,6 +57,6 @@ namespace AppZeroAPI.Setup
             // });
         }
     }
-    
-   
+
+
 }

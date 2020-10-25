@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AppZeroAPI.Models;
+﻿using AppZeroAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,14 +15,15 @@ namespace AppZeroAPI.Controllers
         [HttpGet]
         [Route("1")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetTest()
+        public   Task<IActionResult> GetTest()
         {
-            throw new AppException("Invalid Token"); 
+            throw new AppException("Invalid Token");
         }
         // GET: api/<TestController>
         [HttpGet]
         public IEnumerable<string> Get()
         {
+
             return new string[] { "value1", "value2" };
         }
 

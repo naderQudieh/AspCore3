@@ -1,30 +1,27 @@
-﻿using System;
-using System.Configuration;
-using System.Linq;
-using AppZeroAPI.Interfaces;
-using AppZeroAPI.Entities;
-using AppZeroAPI.Models;
-using System.Net.Mail;
-using System.Net;
-using Microsoft.Extensions.Configuration;
+﻿using AppZeroAPI.Interfaces;
 using AppZeroAPI.Shared;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Configuration;
+using System.Net;
+using System.Net.Mail;
 
 namespace AppZeroAPI.Repository
 {
-    public class  EmailService : IEmailService
+    public class EmailService : IEmailService
     {
-      
-        private readonly EmailConfiguration  emailsettings;
+
+        private readonly EmailConfiguration emailsettings;
         private static readonly string ConfirmEmailUrl = ConfigurationManager.AppSettings["ConfirmEmailUrl"];
         private static readonly string ConfirmChangeEmailUrl = ConfigurationManager.AppSettings["ConfirmChangeEmailUrl"];
         public EmailService(IConfiguration configuration)
         {
             this.emailsettings = configuration.GetSection(nameof(EmailConfiguration)).Get<EmailConfiguration>();
         }
-        
+
         public void Send(string email, string subject, string body)
         {
-            
+
             var smtpClient = GetSmtpClient();
             var mail = new MailMessage
             {

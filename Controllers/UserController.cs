@@ -1,16 +1,13 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System;
+﻿using AppZeroAPI.Entities;
 using AppZeroAPI.Interfaces;
-using AppZeroAPI.Entities;
 using AppZeroAPI.Models;
-using AppZeroAPI.Services;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using AppZeroAPI.Shared;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Controllers
 {
@@ -20,15 +17,15 @@ namespace AppZeroAPI.Controllers
     {
         private readonly ILogger<UserController> logger;
         private readonly IUnitOfWork unitOfWork;
-      
+
 
         public UserController(IUnitOfWork unitOfWork, ILogger<UserController> logger)
         {
             this.logger = logger;
             this.unitOfWork = unitOfWork;
         }
-        
-        [HttpGet] 
+
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             logger.LogInformation("called Product Controller");
@@ -36,7 +33,7 @@ namespace AppZeroAPI.Controllers
             return AppResponse.Success(data);
         }
 
-        [HttpDelete("delete/{id}")] 
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> deleteProfileId(int? id)
         {
             if (id.HasValue)
@@ -53,13 +50,13 @@ namespace AppZeroAPI.Controllers
             {
                 var user = await unitOfWork.Users.DeleteByIdAsync(id.Value);
             }
-            
+
             return AppResponse.Success();
         }
-         
+
 
         [HttpPost("Add")]
-        public async Task<IActionResult> Add([FromBody] RegisterDto  model)
+        public async Task<IActionResult> Add([FromBody] RegisterDto model)
         {
 #if (DEBUG)
             if (model.Password != model.ConfirmPassword)
@@ -109,7 +106,7 @@ namespace AppZeroAPI.Controllers
         public async Task<IActionResult> Put([FromBody] UserProfile newUser)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new {ErrorMsg = "No se ha proporcionado un usuario valido"});
+                return BadRequest(new { ErrorMsg = "No se ha proporcionado un usuario valido" });
 
             var user = GetUser(HttpContext.User).Result;
             newUser.user_id = user.user_id;
@@ -117,7 +114,7 @@ namespace AppZeroAPI.Controllers
 
             return Ok(updatedUser);
         }
-         
+
         [HttpGet("GetById/{id}", Name = "GetById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -127,7 +124,7 @@ namespace AppZeroAPI.Controllers
             if (data == null)
             {
                 return AppResponse.NotFound("User Not Found");
-            } 
+            }
             return AppResponse.Success(data);
         }
         [HttpGet("{email}")]
@@ -142,7 +139,7 @@ namespace AppZeroAPI.Controllers
             }
             return AppResponse.Success(data);
         }
-        private async Task<UserProfile>  GetUser(ClaimsPrincipal user)
+        private async Task<UserProfile> GetUser(ClaimsPrincipal user)
         {
             string textId = user.FindFirst(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
 

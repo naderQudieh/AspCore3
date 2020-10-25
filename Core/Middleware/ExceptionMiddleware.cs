@@ -1,19 +1,11 @@
-﻿using System;
-using System.Net;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using AppZeroAPI.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using AppZeroAPI.Entities;
-using AppZeroAPI.Models;
+using System;
 using System.Data.SqlClient;
-using System.Dynamic;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Reflection;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Middleware
 {
@@ -51,16 +43,16 @@ namespace AppZeroAPI.Middleware
         }
         private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            
+
             bool allowTraceDev = env.IsDevelopment();
             allowTraceDev = false;
-            var message =   ((allowTraceDev) ? exception.StackTrace : exception.Message); 
-            
-            var  statuscode = GetStatusCode(exception);
+            var message = ((allowTraceDev) ? exception.StackTrace : exception.Message);
+
+            var statuscode = GetStatusCode(exception);
             if (exception.InnerException != null)
             {
                 logger.LogError(exception, "Inner Exception : " + exception.InnerException.Message);
-                 message =  message + (allowTraceDev  ? exception.InnerException.StackTrace : exception.InnerException.Message);
+                message = message + (allowTraceDev ? exception.InnerException.StackTrace : exception.InnerException.Message);
             }
 
             if (exception is SqlException)
@@ -70,20 +62,20 @@ namespace AppZeroAPI.Middleware
             }
             else if (exception is AppException)
             {
-                statuscode =  400;
+                statuscode = 400;
                 logger.LogError(exception, "AppException : " + exception.Message);
-            } 
+            }
             else
             {
                 logger.LogError(exception, "Unknown Exception : " + exception.Message);
-               
-            } 
+
+            }
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = statuscode; 
-            var resp = AppResponse.SystemError(message); 
+            context.Response.StatusCode = statuscode;
+            var resp = AppResponse.SystemError(message);
             return context.Response.WriteAsync(JsonConvert.SerializeObject(resp, Formatting.Indented));
         }
-        
+
 
         private int GetStatusCode(Exception exception)
         {

@@ -1,11 +1,8 @@
 ﻿using AppZeroAPI.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
-using System.Net;
 
 namespace AppZeroAPI.Shared
 {
@@ -31,9 +28,9 @@ namespace AppZeroAPI.Shared
 
             if (!user.IsInRole(Role.User))
             {
-                 var xxx =JsonConvert.SerializeObject(new { mssg = "xxxxx" }, Formatting.Indented);
-                 //context.Result = AppResponse.Forbidden("Forbid Result");
-                 context.Result = new ForbidResult(xxx);
+                var xxx = JsonConvert.SerializeObject(new { mssg = "xxxxx" }, Formatting.Indented);
+                //context.Result = AppResponse.Forbidden("Forbid Result");
+                context.Result = new ForbidResult(xxx);
             }
         }
     }
@@ -47,10 +44,10 @@ namespace AppZeroAPI.Shared
             if (!user.IsInRole(Role.Client))
             {
                 context.Result = AppResponse.Forbidden("Forbid Result");
-               // context.Result = new ForbidResult();
+                // context.Result = new ForbidResult();
             }
         }
     }
 
-     
+
 }

@@ -1,8 +1,6 @@
-﻿using AppZeroAPI.Controllers;
-using AppZeroAPI.Interfaces;
+﻿using AppZeroAPI.Interfaces;
 using AppZeroAPI.Middleware;
 using AppZeroAPI.Models;
-using AppZeroAPI.Services;
 using AppZeroAPI.Shared;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +36,7 @@ namespace AppZeroAPI.Controllers
         public async Task<IActionResult> Authenticate([FromBody] LoginDto model)
         {
             if (string.IsNullOrEmpty(model.username)
-                || string.IsNullOrEmpty(model.password) )
+                || string.IsNullOrEmpty(model.password))
             {
                 return AppResponse.BadRequest("All fields are required");
             }
@@ -47,10 +45,10 @@ namespace AppZeroAPI.Controllers
             ModelValidator.Validate(model);
             string ipaddress = Helper.getIPAddress(this.Request);
             var authResponse = await authService.Authenticate(model, ipaddress);
-            if (authResponse == null || authResponse.Token ==null)
-                return  AppResponse.Unauthorized("Invalid Token");
+            if (authResponse == null || authResponse.Token == null)
+                return AppResponse.Unauthorized("Invalid Token");
 
-            if (string.IsNullOrEmpty(authResponse.Token.AccessToken) || string.IsNullOrEmpty(authResponse.Token.RefreshToken)  )
+            if (string.IsNullOrEmpty(authResponse.Token.AccessToken) || string.IsNullOrEmpty(authResponse.Token.RefreshToken))
                 return AppResponse.Unauthorized("Invalid Token");
 
             setTokenCookie(authResponse.Token.RefreshToken);
@@ -65,7 +63,7 @@ namespace AppZeroAPI.Controllers
         {
             ModelValidator.Validate(request);
             var refreshToken = Request.Cookies["refreshToken"];
-            string ipaddress = Helper.getIPAddress(this.Request); 
+            string ipaddress = Helper.getIPAddress(this.Request);
             var authResponse = await authService.RenewAccessToken(request, ipaddress);
             if (authResponse == null)
                 return AppResponse.Unauthorized("Invalid Token");
@@ -73,7 +71,7 @@ namespace AppZeroAPI.Controllers
             if (string.IsNullOrEmpty(authResponse.Token.AccessToken) || string.IsNullOrEmpty(authResponse.Token.RefreshToken))
                 return AppResponse.Unauthorized("Invalid Token");
             setTokenCookie(authResponse.Token.RefreshToken);
-            return AppResponse.Success(authResponse); 
+            return AppResponse.Success(authResponse);
         }
 
         [HttpPost("signup")]
@@ -95,8 +93,8 @@ namespace AppZeroAPI.Controllers
                 ConfirmPassword = ConfirmPassword,
             };
             await authService.SignUp(model, Request.Headers["origin"]);
-            return AppResponse.Success("Registration successful, please check your email for verification instructions") ;
-          }
+            return AppResponse.Success("Registration successful, please check your email for verification instructions");
+        }
 
         [HttpPost("revoke-token")]
         public async Task<IActionResult> RevokeToken([FromBody] string token)
@@ -107,7 +105,7 @@ namespace AppZeroAPI.Controllers
             if (string.IsNullOrEmpty(token))
                 return BadRequest(new { message = "Token is required" });
 
-            bool response = await authService.RevokeToken(_token); 
+            bool response = await authService.RevokeToken(_token);
             if (!response)
                 return NotFound(new { message = "Token not found" });
 

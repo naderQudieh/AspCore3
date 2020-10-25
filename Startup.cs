@@ -1,25 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using AppZeroAPI.Middleware;
+using AppZeroAPI.Setup;
+using AppZeroAPI.Shared;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using AppZeroAPI.Services;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using AppZeroAPI.Entities;
-using System;
-using AppZeroAPI.Setup;
-using AppZeroAPI.Middleware;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Threading.Tasks;
-using System.Linq;
-using AppZeroAPI.Models;
 using WebApi.Shared;
-using AppZeroAPI.Shared;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace AppZeroAPI
 {
@@ -35,16 +23,19 @@ namespace AppZeroAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            ///services.AddDbContext<CartContext>(x => x.UseInMemoryDatabase("Server=DESKTOP-I7816G0;Database=ShopDb;Trusted_Connection=true;"));
+           /// services.AddDbContext<ProductsContext>(x => x.UseInMemoryDatabase("Server=DESKTOP-I7816G0;Database=ShopDb;Trusted_Connection=true;"));
+
             services.AddHttpContextAccessor();
             services.AddSingleton<IObjectModelValidator, NullObjectModelValidator>();
             // in memory database used for simplicity, change to a real db for production applications
             //services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb")); 
             services.AddDbContext<DataContext>(opt =>
             {
-               // opt => opt.UseInMemoryDatabase("TestDb")
+                // opt => opt.UseInMemoryDatabase("TestDb")
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
-             
+
             services.ConfigureAutoMapper();
             services.ConfigureCors();
             services.AddControllers().ConfigureApiBehaviorOptions(options =>
@@ -52,15 +43,15 @@ namespace AppZeroAPI
                 options.SuppressConsumesConstraintForFormFileParameters = true;
                 options.SuppressInferBindingSourcesForParameters = true;
                 options.SuppressModelStateInvalidFilter = true;
-                })
+            })
                 .AddJsonOptions(x => x.JsonSerializerOptions.IgnoreNullValues = true)
                 .AddMvcOptions(options =>
                 {
-                    options.InputFormatters.Insert(0,new JsonStringInputFormatter());
+                    options.InputFormatters.Insert(0, new JsonStringInputFormatter());
                 });
             var appSettingsSection = Configuration.GetSection("JwtOptions");
-            services.Configure<JwtOptions>(appSettingsSection);  
-          
+            services.Configure<JwtOptions>(appSettingsSection);
+
             services.ConfigureAuth(Configuration);
             // configure DI for application services
             //services.AddScoped<IUserService, UserService>();
@@ -87,8 +78,8 @@ namespace AppZeroAPI
                 .AllowAnyHeader()
                 .AllowCredentials());
 
-            app.UseAuthentication(); 
-            
+            app.UseAuthentication();
+
             app.UseMiddleware<ExpiredTokenMiddleware>();
             app.UseAuthorization();
             app.UseConfiguredSwagger();

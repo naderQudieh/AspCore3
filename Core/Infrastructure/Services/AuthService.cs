@@ -5,7 +5,6 @@ using AppZeroAPI.Repository;
 using AppZeroAPI.Shared;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,15 +13,15 @@ using System.Threading.Tasks;
 
 namespace AppZeroAPI.Services
 {
-   
- 
-    
-    public class AuthService :  BaseRepository, IAuthService
+
+
+
+    public class AuthService : BaseRepository, IAuthService
     {
         private const string UserIdKey = "id";
-        private readonly ILogger<AuthService> logger; 
+        private readonly ILogger<AuthService> logger;
         protected readonly ITokenService tokenService;
-        private readonly IUnitOfWork unitOfWork; 
+        private readonly IUnitOfWork unitOfWork;
         private readonly IMapper _mapper;
 
         public AuthService(IConfiguration configuration, ILogger<AuthService> logger,
@@ -31,13 +30,13 @@ namespace AppZeroAPI.Services
             _mapper = mapper;
             this.unitOfWork = unitOfWork;
             this.logger = logger;
-            this.tokenService = tokenService; 
+            this.tokenService = tokenService;
         }
 
-       
-        public async Task<ResponseAuthDto>  Authenticate(LoginDto model, string ipAddress = "")
+
+        public async Task<ResponseAuthDto> Authenticate(LoginDto model, string ipAddress = "")
         {
-            var user = await this.unitOfWork.Users.GetUserByEmailAsync(model.username); 
+            var user = await this.unitOfWork.Users.GetUserByEmailAsync(model.username);
             if (user == null)
                 throw new AppException("User not found - Invalid Email");
 
@@ -45,44 +44,45 @@ namespace AppZeroAPI.Services
             {
                 throw new AppException("Invalid password");
             }
-            
+
             var userInfo = _mapper.Map<UserInfo>(user);
             TokenDto newAccessToken = tokenService.generateAccessToken(userInfo);
             TokenDto newRefreshToken = tokenService.generateRefreshToken(userInfo);
 
             var token = new UserTokenData()
-            { 
-                AccessToken = newAccessToken.EncodedToken,
-                RefreshToken = newRefreshToken.EncodedToken,
-                BlackListed = false,
-                ExpiresAt = newRefreshToken.TokenModel.ValidTo,
-                CreatedAt = newRefreshToken.TokenModel.IssuedAt,
-                CreatedByIP = ipAddress,
-                 
-
-            } ;
-
-            token.user_id = user.user_id;
-            await this.unitOfWork.Users.AddRefreshTokenAsync(token);
-            var tokenInfo  = new TokenInfoDto
             {
                 AccessToken = newAccessToken.EncodedToken,
                 RefreshToken = newRefreshToken.EncodedToken,
-                ExpiresAt = newRefreshToken.TokenModel.ValidTo ,
+                BlackListed = false,
+                AccessTokenExpiresAt = newRefreshToken.TokenModel.ValidTo,
+                CreatedAt = newRefreshToken.TokenModel.IssuedAt,
+                CreatedByIP = ipAddress,
+
+
+            };
+
+            token.user_id = user.user_id;
+            await this.unitOfWork.Users.AddRefreshTokenAsync(token);
+            var tokenInfo = new TokenInfoDto
+            {
+                AccessToken = newAccessToken.EncodedToken,
+                RefreshToken = newRefreshToken.EncodedToken,
+                ExpiresAt = newRefreshToken.TokenModel.ValidTo,
                 TokenType = JwtBearerDefaults.AuthenticationScheme
             };
-            return new ResponseAuthDto {
-                      Token = tokenInfo,
-                      User = userInfo
+            return new ResponseAuthDto
+            {
+                Token = tokenInfo,
+                User = userInfo
             };
 
         }
 
-        
-        public async Task<ResponseAuthDto>   RenewAccessToken(RequestAuthDto request , string ipAddress = "")
+
+        public async Task<ResponseAuthDto> RenewAccessToken(RequestAuthDto request, string ipAddress = "")
         {
             JwtSecurityToken decodedToken = this.tokenService.decodeToken(request.RefreshToken);
-            var user = await  this.unitOfWork.Users.GetByIdAsync(int.Parse(decodedToken.Subject)); 
+            var user = await this.unitOfWork.Users.GetByIdAsync(int.Parse(decodedToken.Subject));
             if (user == null)
                 throw new AppException("Invalid token.");
 
@@ -104,16 +104,16 @@ namespace AppZeroAPI.Services
                 throw new AppException("Token is blacklisted.");
             }
 
-            if (tokenRecord.ExpiresAt.Subtract(DateTime.UtcNow).TotalSeconds <= 0)
+            if (tokenRecord.AccessTokenExpiresAt.Subtract(DateTime.UtcNow).TotalSeconds <= 0)
             {
                 throw new AppException("Refresh token is expired.");
             }
-            
+
             //AutoMapper.Mapper.Map<Destination>(source);
             var userInfo = _mapper.Map<UserInfo>(user);
             TokenDto newAccessToken = tokenService.generateAccessToken(userInfo);
             TokenDto newRefreshToken = tokenService.generateRefreshToken(userInfo);
-             
+
             await this.unitOfWork.Users.BlackListed(tokenRecord.TokenId);
 
             var token = new UserTokenData()
@@ -122,7 +122,7 @@ namespace AppZeroAPI.Services
                 AccessToken = newAccessToken.EncodedToken,
                 RefreshToken = newRefreshToken.EncodedToken,
                 BlackListed = false,
-                ExpiresAt = newRefreshToken.TokenModel.ValidTo,
+                AccessTokenExpiresAt = newRefreshToken.TokenModel.ValidTo,
                 CreatedAt = newRefreshToken.TokenModel.IssuedAt,
                 CreatedByIP = ipAddress
             };
@@ -140,9 +140,9 @@ namespace AppZeroAPI.Services
                 User = userInfo
             };
         }
-       
-         public async Task<int> SignUp(RegisterDto user, string ipAddress="")
-         {
+
+        public async Task<int> SignUp(RegisterDto user, string ipAddress = "")
+        {
             var existingUser = await unitOfWork.Users.GetUserByEmailAsync(user.Email);
             if (existingUser != null)
                 throw new AppException("An account with the same username already exists");
@@ -150,7 +150,7 @@ namespace AppZeroAPI.Services
             var _user = new UserProfile()
             {
                 email = user.Email,
-                username = Guid.NewGuid().ToString().Replace("-","") 
+                username = Guid.NewGuid().ToString().Replace("-", "")
             };
 
             (_user.password_hash, _user.password_salt) = Helper.GetPasswordHash(user.Password);
@@ -158,20 +158,20 @@ namespace AppZeroAPI.Services
             _user.last_modified = DateTime.UtcNow;
             _user.created_on = DateTime.UtcNow;
             _user.password = encPassword;
-            if (user.Email.ToLower().IndexOf("admin")>-1)
+            if (user.Email.ToLower().IndexOf("admin") > -1)
             {
                 _user.role = Role.Admin;
-            } 
+            }
             else if (user.Email.ToLower().IndexOf("user") > -1)
             {
                 _user.role = Role.User;
-            } 
+            }
             else
             {
                 _user.role = Role.Client;
             }
             _user.language = Langauge.English;
-            _user.last_modified =DateTime.UtcNow;
+            _user.last_modified = DateTime.UtcNow;
             _user.created_on = DateTime.UtcNow;
             var result = await unitOfWork.Users.AddUserAsync(_user);
             return result;
@@ -185,8 +185,8 @@ namespace AppZeroAPI.Services
             }
         }
 
-       
-        public async Task<bool> RevokeToken(string token )
+
+        public async Task<bool> RevokeToken(string token)
         {
             JwtSecurityToken decodedToken = this.tokenService.decodeToken(token);
             int userId = int.Parse(decodedToken.Id);
@@ -200,13 +200,13 @@ namespace AppZeroAPI.Services
             {
                 throw new AppException("Invalid Token");
             }
-            if (!stoken.IsActive) 
+            if (!stoken.IsActive)
                 return false;
             stoken.BlackListed = true;
             await unitOfWork.Users.BlackListed(tokenId);
             return true;
         }
-        public  bool  ValidateToken(string userId, string token)
+        public bool ValidateToken(string userId, string token)
         {
             try
             {

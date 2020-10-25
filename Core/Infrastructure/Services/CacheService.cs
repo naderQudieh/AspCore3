@@ -1,8 +1,8 @@
-using System;
-using System.Threading.Tasks;
 using AppZeroAPI.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Services
 {

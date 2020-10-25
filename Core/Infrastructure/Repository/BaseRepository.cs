@@ -1,31 +1,22 @@
-﻿using AppZeroAPI.Interfaces;
-using AppZeroAPI.Entities;
-using AppZeroAPI.Models;
-using Dapper;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace AppZeroAPI.Repository
 {
-    public   class BaseRepository
+    public class BaseRepository
     {
-        
+
         private readonly IConfiguration configuration;
-         
-        public BaseRepository(IConfiguration configuration )
+
+        public BaseRepository(IConfiguration configuration)
         {
-            
+
             this.configuration = configuration;
 
         }
-       
+
+
         public string DbConnection
         {
             get
@@ -39,9 +30,9 @@ namespace AppZeroAPI.Repository
             connection.Open();
             return connection;
         }
-   
+
 
     }
 
-   
+
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,8 +13,8 @@ namespace AppZeroAPI.Controllers
         {
             var accessToken = await HttpContext.GetTokenAsync("access_token");
             UserProfile user = null;// await _userRepository.FirstOrDefaultAsync(x => x.Authentication.AccessToken == accessToken)
-                   //?? throw new UnauthorizedAccessException();
-          
+                                    //?? throw new UnauthorizedAccessException();
+
             return user;
         }
 
@@ -30,7 +29,7 @@ namespace AppZeroAPI.Controllers
                 Browser = result.Match.BrowserFamily,
                 Os = result.Match.OsFamily,
                 UserIp = HttpContext.Connection.RemoteIpAddress.ToString()
-            }; 
+            };
             return detect;
         }
         protected string CurrentUserId
@@ -56,7 +55,7 @@ namespace AppZeroAPI.Controllers
         protected int GetUserIDFromToken()
         {
             return 1;
-           // return tokenHandler.GetSubValue(GetAuthorizationHeaderValue());
+            // return tokenHandler.GetSubValue(GetAuthorizationHeaderValue());
         }
     }
 }

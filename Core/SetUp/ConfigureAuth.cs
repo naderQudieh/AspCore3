@@ -1,20 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using AppZeroAPI.Shared;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using System.Threading.Tasks;
-using AppZeroAPI.Entities;
-using AppZeroAPI.Models;
-using System.Text;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
-using AppZeroAPI.Shared;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Setup
 {
@@ -25,22 +19,22 @@ namespace AppZeroAPI.Setup
         {
             var appSettingsSection = configuration.GetSection("JwtOptions");
             JwtOptions jwtOptions = appSettingsSection.Get<JwtOptions>();
-            var key = Encoding.ASCII.GetBytes(jwtOptions.SecretKey); 
-            var IssuerSigningKey = new SymmetricSecurityKey(key);  
+            var key = Encoding.ASCII.GetBytes(jwtOptions.SecretKey);
+            var IssuerSigningKey = new SymmetricSecurityKey(key);
             bool isEnabled = jwtOptions.IsEnabled;
             if (isEnabled)
             {
                 services.Configure<JwtOptions>(options =>
-                { 
+                {
                     if (jwtOptions.TokenExpireInMints > 0)
                     {
                         options.TokenExpireInMints = jwtOptions.TokenExpireInMints;
                     }
-                     
+
                     if (jwtOptions.RefreshExpireInDays > 0)
                     {
                         options.RefreshExpireInDays = jwtOptions.RefreshExpireInDays;
-                    } 
+                    }
                     options.Issuer = jwtOptions.Issuer;
                     options.Audience = jwtOptions.Audience;
                     options.SecretKey = jwtOptions.SecretKey;
@@ -63,9 +57,9 @@ namespace AppZeroAPI.Setup
                       {
                           ValidateIssuer = false,
                           ValidateAudience = false,
-                          ValidateIssuerSigningKey = true, 
+                          ValidateIssuerSigningKey = true,
                           ValidIssuer = jwtOptions.Issuer,
-                          ValidAudience = jwtOptions.Audience, 
+                          ValidAudience = jwtOptions.Audience,
                           IssuerSigningKey = IssuerSigningKey,
                           RequireExpirationTime = true,
                           ValidateLifetime = true,
@@ -80,24 +74,24 @@ namespace AppZeroAPI.Setup
                               var accessToken = authorization.FirstOrDefault();
                               if (accessToken != null)
                               {
-                                  if (accessToken.IndexOf("Bearer") >-1)
+                                  if (accessToken.IndexOf("Bearer") > -1)
                                   {
                                       accessToken = accessToken.Substring("Bearer ".Length).Trim();
                                   }
-                                 
+
                                   context.Request.Headers.Remove("Authorization");
                                   context.Request.Headers.Add("Authorization", $"Bearer {accessToken}");
-                               
+
 
                                   var identity = context.HttpContext.User.Identity as ClaimsIdentity;
                                   var handler = new JwtSecurityTokenHandler();
-                                   JwtSecurityToken obj= handler.ReadJwtToken(accessToken);
-                                   DateTime validTo = obj.ValidTo;
-                                    DateTime validfrom = obj.ValidFrom;
-                                    var durMin = (validTo - validfrom).TotalMinutes;
-                                    var durHour = (validTo - validfrom).TotalHours;
+                                  JwtSecurityToken obj = handler.ReadJwtToken(accessToken);
+                                  DateTime validTo = obj.ValidTo;
+                                  DateTime validfrom = obj.ValidFrom;
+                                  var durMin = (validTo - validfrom).TotalMinutes;
+                                  var durHour = (validTo - validfrom).TotalHours;
                               }
-                             
+
                               // var accessToken = context.HttpContext.Request.Headers["Authorization"];
                               //// var accessToken = context.Request.Query["access_token"];
 
@@ -113,51 +107,51 @@ namespace AppZeroAPI.Setup
                           },
                           OnForbidden = ctx =>
                           {
-                              Console.WriteLine(ctx.Response.StatusCode); 
+                              Console.WriteLine(ctx.Response.StatusCode);
                               //throw new AppException("Forbidden"); 
                               return Task.CompletedTask;
                           },
-                          OnAuthenticationFailed =  context =>
-                          {
-                      
-                              string err = "";
+                          OnAuthenticationFailed = context =>
+                         {
 
-                              var exType = context.Exception.GetType();
+                             string err = "";
 
-                              if (exType == typeof(SecurityTokenValidationException))
-                              {
-                                  context.Response.Headers.Add("Token-Invalid", "true");
-                                  err += "invalid token";
-                              }
-                              else if (exType == typeof(SecurityTokenInvalidIssuerException))
-                              {
-                                  context.Response.Headers.Add("Token-Invalid-Issuer", "true");
-                                  err += "invalid issuer";
-                              }
-                              else if (exType == typeof(SecurityTokenExpiredException))
-                              {
-                                  context.Response.Headers.Add("Token-Expired", "true");
-                                  err += "token expired";
-                              }
-                              else if (exType == typeof(SecurityTokenKeyWrapException))
-                              {
-                                  context.Response.StatusCode = 200;
-                                  err += "token key fail";
-                              }
-                              else if (exType == typeof(SecurityTokenInvalidSignatureException))
-                              {
-                                  context.Response.Headers.Add("Token-Invalid-Signature", "true");
-                                  err += "token key invalid signature";
-                              }      //  context.NoResult();
-                                     //  context.Response.ContentType = "application/json";
-                                     //  context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                                     // var resp = AppResponse.UnauthorizedUser("Authorization Rejection -" + $"{ err }");
-                                     //await context.Response.WriteAsync(JsonConvert.SerializeObject(resp, Formatting.Indented))  ;
+                             var exType = context.Exception.GetType();
+
+                             if (exType == typeof(SecurityTokenValidationException))
+                             {
+                                 context.Response.Headers.Add("Token-Invalid", "true");
+                                 err += "invalid token";
+                             }
+                             else if (exType == typeof(SecurityTokenInvalidIssuerException))
+                             {
+                                 context.Response.Headers.Add("Token-Invalid-Issuer", "true");
+                                 err += "invalid issuer";
+                             }
+                             else if (exType == typeof(SecurityTokenExpiredException))
+                             {
+                                 context.Response.Headers.Add("Token-Expired", "true");
+                                 err += "token expired";
+                             }
+                             else if (exType == typeof(SecurityTokenKeyWrapException))
+                             {
+                                 context.Response.StatusCode = 200;
+                                 err += "token key fail";
+                             }
+                             else if (exType == typeof(SecurityTokenInvalidSignatureException))
+                             {
+                                 context.Response.Headers.Add("Token-Invalid-Signature", "true");
+                                 err += "token key invalid signature";
+                             }      //  context.NoResult();
+                                    //  context.Response.ContentType = "application/json";
+                                    //  context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                                    // var resp = AppResponse.UnauthorizedUser("Authorization Rejection -" + $"{ err }");
+                                    //await context.Response.WriteAsync(JsonConvert.SerializeObject(resp, Formatting.Indented))  ;
 
 
                               return Task.CompletedTask;
 
-                          },
+                         },
                           OnTokenValidated = context =>
                           {
                               var accessToken = context.SecurityToken as JwtSecurityToken;
@@ -168,7 +162,7 @@ namespace AppZeroAPI.Setup
                                   {
                                       identity.AddClaim(new Claim("access_token", accessToken.RawData));
                                   }
-                                      
+
                               }
                               var userIdentity = context.Principal.Identity.Name;
                               //var exp = AppZeroAPI.Shared.CommonLib.GetExpiryClaimExpiryDate(context.Principal.Claims.Where(x => x.Type == ExpiryClaimDefinition).FirstOrDefault().Value);
@@ -185,6 +179,6 @@ namespace AppZeroAPI.Setup
                   });
             };
         }
-         
+
     }
 }

@@ -1,19 +1,9 @@
-using AppZeroAPI.Models;
-using AppZeroAPI.Shared;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using WebApi.Shared;
 
 namespace AppZeroAPI.Middleware
 {
-    
+
     public class CorsMiddleware
     {
         private readonly RequestDelegate _next;

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Converters;
-using System.ComponentModel;
-using System.Text.Json.Serialization;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace AppZeroAPI.Middleware
 {
@@ -45,7 +41,7 @@ namespace AppZeroAPI.Middleware
     }
     public class ModelValidator
     {
-        
+
         public static void Validate(object model)
         {
             var validationContext = new ValidationContext(model);

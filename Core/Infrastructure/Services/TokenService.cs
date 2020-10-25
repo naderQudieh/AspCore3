@@ -1,11 +1,8 @@
 ﻿using AppZeroAPI.Models;
 using AppZeroAPI.Shared;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -14,13 +11,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AppZeroAPI.Services
 {
-  
-    
- 
+
+
+
     public class TokenService : ITokenService
     {
         private JwtSecurityTokenHandler tokenhandler = new JwtSecurityTokenHandler();
@@ -29,14 +25,14 @@ namespace AppZeroAPI.Services
         private readonly IConfiguration configuration;
         private readonly JwtOptions jwtOptions;
         private HttpContext context;
-        public TokenService(IConfiguration configuration, IHttpContextAccessor contextAccessor , ILogger<TokenService> logger)
-        { 
+        public TokenService(IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<TokenService> logger)
+        {
             this.context = contextAccessor.HttpContext;
             this.logger = logger;
             this.configuration = configuration;
             this.jwtOptions = this.configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
         }
-        public   TokenValidationParameters getTokenValidationParameters()
+        public TokenValidationParameters getTokenValidationParameters()
         {
             return new TokenValidationParameters
             {
@@ -51,8 +47,8 @@ namespace AppZeroAPI.Services
                 ClockSkew = TimeSpan.Zero
             };
         }
-        
-        
+
+
         public ClaimsPrincipal getSession()
         {
             return this.context?.User;
@@ -62,9 +58,9 @@ namespace AppZeroAPI.Services
             return this.jwtOptions.TokenExpireInMints;
         }
         public TokenDto generateAccessToken(UserInfo user)
-        {   
+        {
             var claims = this.getUserClaims(user).Append(new Claim(JwtRegisteredClaimNames.Typ, "access"));
-            JwtSecurityToken token =  this.generateToken(user, DateTime.UtcNow.AddMinutes(AccessTokenLifeTimeMints()), claims);
+            JwtSecurityToken token = this.generateToken(user, DateTime.UtcNow.AddMinutes(AccessTokenLifeTimeMints()), claims);
             return new TokenDto()
             {
                 EncodedToken = this.tokenhandler.WriteToken(token),
@@ -73,9 +69,9 @@ namespace AppZeroAPI.Services
         }
 
         public TokenDto generateRefreshToken(UserInfo user)
-        { 
+        {
             var claims = this.getUserClaims(user).Append(new Claim(JwtRegisteredClaimNames.Typ, "refresh"));
-            JwtSecurityToken token = this.generateToken(user, DateTime.UtcNow.AddDays(5), claims); 
+            JwtSecurityToken token = this.generateToken(user, DateTime.UtcNow.AddDays(5), claims);
             return new TokenDto()
             {
                 EncodedToken = this.tokenhandler.WriteToken(token),
@@ -83,7 +79,7 @@ namespace AppZeroAPI.Services
             };
         }
         private JwtSecurityToken generateToken(UserInfo user, DateTime expires, IEnumerable<Claim> claims)
-        { 
+        {
             var descriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(claims),
@@ -91,13 +87,13 @@ namespace AppZeroAPI.Services
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)), SecurityAlgorithms.HmacSha256),
             };
 
-            return tokenhandler.CreateJwtSecurityToken(descriptor); 
+            return tokenhandler.CreateJwtSecurityToken(descriptor);
         }
         public bool IsRefreshToken(JwtSecurityToken token)
         {
             return token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Typ)?.Value == "refresh";
         }
-        
+
         private string generateRefreshTokenX()
         {
             using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
@@ -111,9 +107,9 @@ namespace AppZeroAPI.Services
         {
             return token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Typ)?.Value == "refresh";
         }
-        
 
-        
+
+
         public string getValue(string accessToken, string keyOrClaimType)
         {
             var jwt = decodeToken(accessToken);
@@ -128,7 +124,7 @@ namespace AppZeroAPI.Services
             }
             return claim.Value;
         }
-         
+
         public JwtSecurityToken decodeToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -178,7 +174,7 @@ namespace AppZeroAPI.Services
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)), SecurityAlgorithms.HmacSha256)
             };
             var tokenHandler = new JwtSecurityTokenHandler();
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor); 
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
             return tokenString;
         }
@@ -186,7 +182,7 @@ namespace AppZeroAPI.Services
         private Claim[] getUserClaims(UserInfo user)
         {
             string userid = user.user_id.ToString() ?? user.email;
-            return new[] { 
+            return new[] {
                 new Claim("Id", user.user_id.ToString()),
                  new Claim(ClaimTypes.Role, Role.Admin),
                // new Claim(ClaimTypes.Name, user.username), same as UniqueName
@@ -196,7 +192,7 @@ namespace AppZeroAPI.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
         }
-       
+
         private ClaimsIdentity generateUserClaimsIdentity(UserInfo user)
         {
             ClaimsIdentity Subject = new ClaimsIdentity(new Claim[]
@@ -214,8 +210,8 @@ namespace AppZeroAPI.Services
             }
             return Subject;
         }
-    
-      
+
+
 
         private JwtSecurityToken gecodeToken(string token)
         {
@@ -224,16 +220,16 @@ namespace AppZeroAPI.Services
                 throw new AppException("Invalid token");
             return tokenHandler.ReadJwtToken(token);
         }
-        
+
         private string getUserIdFromBearer(string bearer)
         {
-          
+
             var token = bearer.Replace("Bearer ", "").Replace("bearer ", "");
             ClaimsPrincipal clms = getPrincipalFromToken(token);
             var userid = getUserId(clms);
             return userid;
         }
-        
+
 
     }
 }

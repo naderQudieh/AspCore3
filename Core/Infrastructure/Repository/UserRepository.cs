@@ -1,18 +1,14 @@
-﻿using AppZeroAPI.Interfaces;
-using AppZeroAPI.Entities;
-using AppZeroAPI.Models;
+﻿using AppZeroAPI.Entities;
+using AppZeroAPI.Interfaces;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using System.Data;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AppZeroAPI.Repository
 {
@@ -31,9 +27,9 @@ namespace AppZeroAPI.Repository
             //_logger= logger.CreateLogger< UserRepository>();
         }
         public async Task<int> AddUserAsync(UserProfile entity)
-        { 
+        {
             entity.created_on = DateTime.UtcNow;
-            entity.last_modified = DateTime.UtcNow; 
+            entity.last_modified = DateTime.UtcNow;
             //last_insert_rowid
             var sql = @"Insert into user_profiles(username,fname,lname,email,phone,password,password_hash,password_salt,role,language,profile_picture,last_modified,created_on)
                 VALUES (@username,@fname,@lname,@email,@phone,@password,@password_hash,@password_salt,@role, @language,@profile_picture,@last_modified,@created_on)";
@@ -45,8 +41,8 @@ namespace AppZeroAPI.Repository
         }
         public async Task<int> AddAsync(UserProfile entity)
         {
-            entity.created_on = DateTime.UtcNow  ;
-            entity.last_modified  = DateTime.UtcNow;
+            entity.created_on = DateTime.UtcNow;
+            entity.last_modified = DateTime.UtcNow;
             //last_insert_rowid
             var sql = @"Insert into user_profiles(username,fname,lname,email,phone,password,password_hash, password_salt,role,language,profile_picture,created_on)
                 VALUES (@username,@fname,@lname,@email,@phone,@password,@password_hash,@password_salt,@role, @language,@profile_picture,@created_on)";
@@ -56,7 +52,7 @@ namespace AppZeroAPI.Repository
             }
 
         }
-        public async Task<int> UpdateAsync(UserProfile entity)
+        public async Task<bool> UpdateAsync(UserProfile entity)
         {
             // var user = dto.MapTo<TUser>();
             // await userRepository.Edit(user, Session);
@@ -64,12 +60,12 @@ namespace AppZeroAPI.Repository
             var sql = @"UPDATE user_profiles SET fname = @fname, lname = @lname, phone = @phone, language = @language, username = @username ,last_modified=@last_modified  WHERE user_id = @user_id";
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.ExecuteAsync(sql, entity);
-                return result;
+                var rows = await connection.ExecuteAsync(sql, entity);
+                return rows != 0;
             }
         }
 
-        public Task<int> UpdateUserSettingsAsync(UserProfile user, CancellationToken cancellationToken)
+        public async Task<bool> UpdateUserSettingsAsync(UserProfile user, CancellationToken cancellationToken)
         {
             using (var connection = this.GetOpenConnection())
             {
@@ -77,30 +73,31 @@ namespace AppZeroAPI.Repository
 					update
 						user
 					set
-						name = @Name,
-						surname = @Surname,
+						fname = @fname,
+						lname = @lname,
 						language = @Language,
 						profile_picture = @ProfilePicture,
 						last_modified = @LastModified
 					where
 						id = @Id
 					";
-               
-                return connection.ExecuteAsync(
+                var rows = await connection.ExecuteAsync(
                     new CommandDefinition(sql,
                         new
                         {
                             user.fname,
                             user.lname,
                             user.language,
-                            user.profile_picture ,
+                            user.profile_picture,
                             user.last_modified,
                             user.user_id
                         }, cancellationToken: cancellationToken));
+                return rows != 0;
+                 
             }
         }
 
-        public async Task<UserProfile> GetByIdAsync(int user_id)
+        public async Task<UserProfile> GetByIdAsync(long user_id)
         {
 
             var sql = "SELECT * FROM user_profiles WHERE user_id = @user_id";
@@ -153,7 +150,7 @@ namespace AppZeroAPI.Repository
                 return result.role;
             }
         }
-         
+
 
         public async Task<string> GeneratePasswordResetTokenAsync(UserProfile user)
         {
@@ -206,8 +203,8 @@ namespace AppZeroAPI.Repository
                 return false;
         }
 
-        
-        public async Task<bool> DeleteByIdAsync(int id)
+
+        public async Task<bool> DeleteByIdAsync(long id)
         {
             //var sql = "delete from user_profiles WHERE user_id = @userid";
             //using (var connection = this.GetOpenConnection())
@@ -235,7 +232,7 @@ namespace AppZeroAPI.Repository
                 return result;
             }
         }
-        public async Task<UserTokenData> GetUserRefreshTokenByTokenId(int refreshTokenId)
+        public async Task<UserTokenData> GetUserRefreshTokenByTokenId(long refreshTokenId)
         {
             var args = new { @token_id = refreshTokenId };
 
@@ -259,7 +256,7 @@ namespace AppZeroAPI.Repository
                 return await connection.QuerySingleOrDefaultAsync<UserTokenData>(sql, args);
             }
         }
-     
+
         public async Task<IList<UserTokensData>> GetUserToekns(string userid)
         {
             var args = new { user_id = userid };
@@ -272,9 +269,9 @@ namespace AppZeroAPI.Repository
                 return products.ToList();
             }
         }
-        
 
-        public async Task<int> DeleteRefreshTokenByIdAsync(int refreshTokenId)
+
+        public async Task<int> DeleteRefreshTokenByIdAsync(long refreshTokenId)
         {
             var args = new { @token_id = refreshTokenId };
             const string sql = "DELETE FROM user_refresh_tokens WHERE token_id = @token_id";
@@ -296,7 +293,7 @@ namespace AppZeroAPI.Repository
                 return result;
             }
         }
-        public async Task  BlackListed(int token_id)
+        public async Task BlackListed(long token_id)
         {
             var args = new { @token_id = token_id };
 
@@ -304,10 +301,10 @@ namespace AppZeroAPI.Repository
 
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.ExecuteAsync(sql,args); 
+                var result = await connection.ExecuteAsync(sql, args);
             }
         }
-        
+
 
     }
 }

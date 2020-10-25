@@ -1,15 +1,15 @@
-﻿using AppZeroAPI.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using AppZeroAPI.Repository;
 
 namespace AppZeroAPI.Interfaces
 {
     public interface IUnitOfWork
     {
-        IProductRepository Products { get; }
+        IProductRepository Products { get; } 
+        IOrderRepository Orders { get; }
         IUserRepository Users { get; }
-       
+        ICustomerRepository Customers { get; } 
+        ILookupsRepository Lookups { get; }
+        IPaymentRepository Payments { get; }
     }
-    
+
 }

@@ -1,27 +1,20 @@
-﻿using AppZeroAPI.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System.Dynamic;
-using Newtonsoft.Json.Converters;
-using System.IdentityModel.Tokens.Jwt;
- 
+using System.Runtime.Serialization;
 
 namespace AppZeroAPI.Models
 {
-
+    
+    
     public class ResetPasswordRequest
     {
         [Required]
@@ -48,7 +41,7 @@ namespace AppZeroAPI.Models
         [Required]
         [MinLength(3)]
         public string Name { get; set; }
-       
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }
@@ -115,22 +108,22 @@ namespace AppZeroAPI.Models
     public class ResponseAuthDto
     {
         [Required]
-        public TokenInfoDto  Token { get; set; }
+        public TokenInfoDto Token { get; set; }
 
         [Required]
         public UserInfo User { get; set; }
     }
 
     public class TokenInfoDto
-    { 
+    {
         [Required]
         [JsonProperty("access_token", Required = Required.DisallowNull)]
         public string AccessToken { get; set; }
-        
+
         [Required]
         [JsonProperty("refresh_token", Required = Required.DisallowNull)]
         public string RefreshToken { get; set; }
-          
+
         [JsonProperty("expires_at")]
         public DateTime ExpiresAt { get; set; }
 
@@ -138,11 +131,11 @@ namespace AppZeroAPI.Models
         [JsonProperty("token_type", Required = Required.DisallowNull)]
         public string TokenType { get; set; }
     }
-     
+
     public class UserInfo
     {
-        
-        public int user_id { get; set; } 
+
+        public int user_id { get; set; }
         public string username { get; set; }
         public string fname { get; set; }
         public string lname { get; set; }
@@ -151,12 +144,12 @@ namespace AppZeroAPI.Models
         public string role { get; set; }
     }
     public class TokenDto
-    {  
-        public string EncodedToken { get; set; } 
+    {
+        public string EncodedToken { get; set; }
         public JwtSecurityToken TokenModel { get; set; }
 
     }
- 
+
 
     public class RequestPasswordDTO
     {
@@ -170,7 +163,7 @@ namespace AppZeroAPI.Models
         public string ConfirmPassword { get; set; }
         public string Token { get; set; }
     }
-   
+
 
     class SmtpSettings
     {
@@ -187,7 +180,7 @@ namespace AppZeroAPI.Models
 
     public class LogData
     {
-         
+
         public int Id { get; set; }
 
         public string Category { get; set; }
@@ -199,9 +192,9 @@ namespace AppZeroAPI.Models
         public int UserId { get; set; }
         public DateTimeOffset? MessageOn { get; set; }
     }
- 
-     
-   
+
+
+
 
     [JsonConverter(typeof(StringEnumConverter))]
     public enum AuthStatus
@@ -210,15 +203,15 @@ namespace AppZeroAPI.Models
         success
     }
 
-        
+
     [Serializable]
     public sealed class AppResponse
     {
         public int status { get; set; }
         public object payload { get; set; }
-        public   AppResponse()
+        public AppResponse()
         {
-             
+
         }
 
         public static object ToResult(object data = null, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
@@ -231,7 +224,7 @@ namespace AppZeroAPI.Models
                     payload = new { data = data },
                     status = 1
                 };
-                return apiResponse ;
+                return apiResponse;
             }
             else
             {
@@ -240,45 +233,46 @@ namespace AppZeroAPI.Models
                     message = data,
                     status = -1
                 };
-             return  apiResponse  ;
+                return apiResponse;
             }
         }
         public static ObjectResult ToObjectResult(object data = null, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
-           
+
             if (httpStatusCode == HttpStatusCode.OK)
             {
-                var apiResponse = new AppResponse 
+                var apiResponse = new AppResponse
                 {
                     payload = new { data = data },
                     status = 1
-                }; 
+                };
                 return new ObjectResult(JsonConvert.SerializeObject(apiResponse));
-            } else
+            }
+            else
             {
-                var apiResponse = new  
+                var apiResponse = new
                 {
-                    message =  data ,
+                    message = data,
                     status = -1
-                }; 
+                };
                 return new ObjectResult(JsonConvert.SerializeObject(apiResponse));
-            } 
+            }
         }
-        
+
         public static ObjectResult Success(Object data = null)
         {
             return ToObjectResult(data, HttpStatusCode.OK);
         }
-          
+
         public static ConflictObjectResult Conflict(string message = "Conflict")
         {
             return new ConflictObjectResult(ToObjectResult(message, HttpStatusCode.NotFound));
         }
         public static BadRequestObjectResult BadRequest(string message = "Bad Request")
         {
-            return new BadRequestObjectResult(ToObjectResult(message,HttpStatusCode.BadRequest));
+            return new BadRequestObjectResult(ToObjectResult(message, HttpStatusCode.BadRequest));
         }
-        public static NotFoundObjectResult NotFound(string message =  "Not Found")
+        public static NotFoundObjectResult NotFound(string message = "Not Found")
         {
             return new NotFoundObjectResult(ToObjectResult(message, HttpStatusCode.NotFound));
         }
@@ -291,7 +285,7 @@ namespace AppZeroAPI.Models
             return new UnauthorizedObjectResult(ToObjectResult(message, HttpStatusCode.Unauthorized));
         }
         public static ObjectResult ExpectationFailed(string errorMsg)
-        { 
+        {
             return ToObjectResult(errorMsg, HttpStatusCode.ExpectationFailed);
         }
 

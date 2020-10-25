@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace AppZeroAPI.Interfaces
 {
     public interface IGenericRepository<TEntity> where TEntity : class
-    { 
-        Task<bool> DeleteByIdAsync(int id);
+    {
+        Task<bool> DeleteByIdAsync(long id);
         Task<IEnumerable<TEntity>> GetAllAsync();
-        Task<TEntity> GetByIdAsync(int id); 
+        Task<TEntity> GetByIdAsync(long id);
+        //Task<TEntity> GetByIdAsync(string id );
         Task<int> AddAsync(TEntity entity);
-        Task<int> UpdateAsync(TEntity entity);
-
+        Task<bool> UpdateAsync(TEntity entity);
+       
     }
+
+    
 }
