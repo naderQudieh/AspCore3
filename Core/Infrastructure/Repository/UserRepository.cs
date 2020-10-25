@@ -26,10 +26,22 @@ namespace AppZeroAPI.Repository
             this.logger = logger;
             //_logger= logger.CreateLogger< UserRepository>();
         }
+
         public async Task<int> AddUserAsync(UserProfile entity)
         {
-            entity.created_on = DateTime.UtcNow;
-            entity.last_modified = DateTime.UtcNow;
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
+            using (var connection = this.GetOpenConnection())
+            {
+                //entity.AddedOn = DateTime.UtcNow;
+                var result = await connection.InsertAsync(entity);
+                return result;
+            }
+        }
+        public async Task<int> AddUserAsync2(UserProfile entity)
+        {
+            entity.date_created  = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             //last_insert_rowid
             var sql = @"Insert into user_profiles(username,fname,lname,email,phone,password,password_hash,password_salt,role,language,profile_picture,last_modified,created_on)
                 VALUES (@username,@fname,@lname,@email,@phone,@password,@password_hash,@password_salt,@role, @language,@profile_picture,@last_modified,@created_on)";
@@ -41,8 +53,8 @@ namespace AppZeroAPI.Repository
         }
         public async Task<int> AddAsync(UserProfile entity)
         {
-            entity.created_on = DateTime.UtcNow;
-            entity.last_modified = DateTime.UtcNow;
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             //last_insert_rowid
             var sql = @"Insert into user_profiles(username,fname,lname,email,phone,password,password_hash, password_salt,role,language,profile_picture,created_on)
                 VALUES (@username,@fname,@lname,@email,@phone,@password,@password_hash,@password_salt,@role, @language,@profile_picture,@created_on)";
@@ -65,8 +77,10 @@ namespace AppZeroAPI.Repository
             }
         }
 
-        public async Task<bool> UpdateUserSettingsAsync(UserProfile user, CancellationToken cancellationToken)
+        public async Task<bool> UpdateUserSettingsAsync(UserProfile entity, CancellationToken cancellationToken)
         {
+            entity.date_created = DateTime.UtcNow;
+            entity.date_modified = DateTime.UtcNow;
             using (var connection = this.GetOpenConnection())
             {
                 var sql = @"
@@ -85,12 +99,11 @@ namespace AppZeroAPI.Repository
                     new CommandDefinition(sql,
                         new
                         {
-                            user.fname,
-                            user.lname,
-                            user.language,
-                            user.profile_picture,
-                            user.last_modified,
-                            user.user_id
+                            entity.fname,
+                            entity.lname,
+                            entity.language,
+                            entity.profile_picture,
+                            entity.user_id
                         }, cancellationToken: cancellationToken));
                 return rows != 0;
                  

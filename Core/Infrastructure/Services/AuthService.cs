@@ -154,9 +154,7 @@ namespace AppZeroAPI.Services
             };
 
             (_user.password_hash, _user.password_salt) = Helper.GetPasswordHash(user.Password);
-            var encPassword = Helper.Encrypt(user.Password);
-            _user.last_modified = DateTime.UtcNow;
-            _user.created_on = DateTime.UtcNow;
+            var encPassword = Helper.Encrypt(user.Password); 
             _user.password = encPassword;
             if (user.Email.ToLower().IndexOf("admin") > -1)
             {
@@ -170,9 +168,7 @@ namespace AppZeroAPI.Services
             {
                 _user.role = Role.Client;
             }
-            _user.language = Langauge.English;
-            _user.last_modified = DateTime.UtcNow;
-            _user.created_on = DateTime.UtcNow;
+            _user.language = Langauge.English; 
             var result = await unitOfWork.Users.AddUserAsync(_user);
             return result;
         }

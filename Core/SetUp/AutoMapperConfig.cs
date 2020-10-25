@@ -2,7 +2,9 @@
 using AppZeroAPI.Models;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
-
+using Dapper.FluentMap;
+using Dapper;
+using Dapper.FluentMap.Mapping;
 
 namespace AppZeroAPI.Setup
 {
@@ -11,21 +13,21 @@ namespace AppZeroAPI.Setup
         public static void ConfigureAutoMapper(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(Startup));
-            //var mapperConfig = new MapperConfiguration(mc =>
-            //{
-            //    mc.AddProfile(new MappingProfile());
-            //});
-        }
-
-
-
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+        } 
     }
+ 
     public class MappingProfile : Profile
     {
         //AutoMapper will scan our application and look for 
         //classes that inherit from the Profile class and load their mapping configurations.
         public MappingProfile()
         {
+
+
             CreateMap<UserProfile, UserInfo>();
             //CreateMap<UserProfile, UserInfo>()
             //      .ForMember(dest => dest.fname,opt => opt.MapFrom<string>((src, dst) =>

@@ -295,20 +295,13 @@ namespace AppZeroAPI.Entities
         [NotMapped]
         public string verification_token { get; set; }
         [NotMapped]
-        public DateTime? verified { get; set; }
+        public DateTime? date_verified { get; set; }
 
-        [NotMapped]
-        public bool Isverified => verified.HasValue || password_reset.HasValue;
+          
+        public DateTime date_created { get; set; }
 
-
-        [JsonIgnore]
-        public DateTime? password_reset { get; set; }
-
-        [Column("created_on")]
-        public DateTime created_on { get; set; }
-
-        [Column("last_modified")]
-        public DateTime last_modified { get; set; }
+         
+        public DateTime date_modified { get; set; }
 
         [Column("language")]
         public int language { get; set; }

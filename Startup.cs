@@ -37,6 +37,7 @@ namespace AppZeroAPI
             });
 
             services.ConfigureAutoMapper();
+            services.ConfigureFluentMapper();
             services.ConfigureCors();
             services.AddControllers().ConfigureApiBehaviorOptions(options =>
             {
