@@ -11,8 +11,8 @@
     <None Remove="Controllers\New folder\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Aspose.Words" Version="20.10.0" />
     <PackageReference Include="Braintree" Version="5.1.0" />
+    <PackageReference Include="BraintreeHttp-Dotnet" Version="0.3.0" />
     <PackageReference Include="Dapper.FluentMap" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.8" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
@@ -29,7 +29,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.8" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.8" />
     <PackageReference Include="Microsoft.Graph.Core" Version="1.22.0" />
-    <PackageReference Include="PayPal.SDK.NETCore" Version="1.9.1.2" />
+    <PackageReference Include="PayPalCheckoutSdk" Version="1.0.3" />
+    <PackageReference Include="PayPalHttp" Version="1.0.0" />
+    <PackageReference Include="RestSharp" Version="106.11.7" />
     <PackageReference Include="Square" Version="6.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.6.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUi" Version="5.6.3" />

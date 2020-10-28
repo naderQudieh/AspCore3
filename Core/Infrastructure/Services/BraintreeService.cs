@@ -78,8 +78,8 @@ namespace AppZeroAPI.Services
             return result;
         }
 
-
-        public  string GetClientToken(string username)
+       
+        public async Task<string> GetClientToken(string username)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace AppZeroAPI.Services
                 var customer = gateway.Customer.Find(custResponse.Target.Id);
 
                 //If this fails and say "CustomerId" is not found, call it with no customerID
-                var clientToken = gateway.ClientToken.Generate(new ClientTokenRequest
+                var clientToken = await gateway.ClientToken.GenerateAsync(new ClientTokenRequest
                 {
                     CustomerId = customer.Id
                 });

@@ -78,10 +78,12 @@ namespace AppZeroAPI.Entities
         public long shipping_address_id { get; set; }
         public long payment_id { get; set; }
         public decimal order_total { get; set; }
+ 
         public decimal discount_amount { get; set; }
         public decimal total_payable { get; set; }
         public string order_status { get; set; }
         public string confirm_no { get; set; }
+        public string PaypalToken { get; set; }
         public DateTime date_created { get; set; }
         public DateTime date_modified { get; set; }
 
@@ -131,6 +133,12 @@ namespace AppZeroAPI.Entities
         CreditCrad,
         Bank
     }
+    public class PurchaseData
+    {
+        public string payment_method_nonce;
+        public string client_token;
+        public decimal amount;
+    }
     [Table("customer_cards")]
     public class CustomerCreditCard
     {
@@ -139,20 +147,28 @@ namespace AppZeroAPI.Entities
         [Column("card_id")]
         [JsonProperty("card_id")]
         public string card_id { get; set; }
+        public string cardtype { get; set; }
         public long customer_id { get; set; }
-        public string card_number { get; set; }
+        public string first_name { get; set; }
         public string last_name { get; set; }
         public string card_holder_name { get; set; }
-        public string first_name { get; set; }
-        public Address billing_address { get; set; }
+        public string card_number { get; set; }  
         public int card_exp_mm { get; set; }
         public int card_exp_yy { get; set; }
-        public string merchant_id { get; set; }
-        public string card_cvv { get; set; }
-        public string cardtype { get; set; }
+        public string card_cvv { get; set; } 
         public string card_status { get; set; }
+        public string address_id { get; set; }
+        public string address1 { get; set; }
+        public string address2 { get; set; }
+        public string city { get; set; }
+        public string state { get; set; }
+        public string zip { get; set; }
+        public string zip4 { get; set; }
+        public string country { get; set; }
+        public string phone { get; set; }
+        public string mobile { get; set; }
         public DateTime date_created { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "expire_month")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "date_modified")]
         public DateTime date_modified { get; set; }
 
     }
@@ -355,7 +371,7 @@ namespace AppZeroAPI.Entities
         public string barcode { get; set; }
         public string imge_url { get; set; }
         public int qty_in_stock { get; set; }
-        public float price { get; set; }
+        public float unit_price { get; set; }
         public int department_id { get; set; }
         public DateTime date_created { get; set; }
         public DateTime date_modified { get; set; }

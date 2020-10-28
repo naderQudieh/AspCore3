@@ -11,23 +11,25 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AppZeroAPI.Models;
 using System.Linq.Expressions;
-
+using AppZeroAPI.Services;
 namespace AppZeroAPI.Repository
 {
 
     public class PaymentRepository : BaseRepository, IPaymentRepository
     {
-      
+        
+        private readonly BraintreeService braintreeService;
         private readonly ILogger<PaymentRepository> logger;
-        public PaymentRepository(IConfiguration configuration, ILogger<PaymentRepository> logger) : base(configuration)
+        public PaymentRepository(BraintreeService braintreeService , IConfiguration configuration, ILogger<PaymentRepository> logger) : base(configuration)
         {
+            this.braintreeService = braintreeService;
             this.logger = logger;
         }
-
-
+         
         public async Task<IEnumerable<Payment>> CreatePayment(IEnumerable<Payment> payment)
         {
             //logger.LogInformation(sql);
+           // braintreeService.Sale();
             using (var connection = this.GetOpenConnection())
             {
                 var result = await connection.GetAllAsync<Payment>();

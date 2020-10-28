@@ -27,7 +27,7 @@ namespace AppZeroAPI.Repository
 
         public async Task<IEnumerable<LookUps>> GetCountries()
         { 
-            var sql = "SELECT * FROM lkp_countries"; 
+            var sql = "SELECT code, name as value FROM lkp_countries"; 
             logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
@@ -37,7 +37,7 @@ namespace AppZeroAPI.Repository
         }
         public async Task<IEnumerable<LookUps>> GetStates()
         {
-            var sql = "SELECT * FROM lkp_states";
+            var sql = "SELECT code, name as value FROM lkp_states";
             logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
@@ -47,7 +47,7 @@ namespace AppZeroAPI.Repository
         }
         public async Task<IEnumerable<LookUps>> GetLanguages()
         {
-            var sql = "SELECT * FROM lkp_languages";
+            var sql = "SELECT code, name as value FROM lkp_languages";
             logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
