@@ -35,8 +35,7 @@ namespace AppZeroAPI.Middleware
                 await next(httpContext);
             }
             catch (Exception ex)
-            {
-
+            { 
                 logger.LogError(ex, ex.Message);
                 await HandleExceptionAsync(httpContext, ex);
             }

@@ -1,4 +1,4 @@
-﻿using AppZeroAPI.Entities;
+﻿using AppZeroAPI.Shared.PayModel;
 using AppZeroAPI.Interfaces;
 using Braintree;
 using Microsoft.Extensions.Configuration;
@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace AppZeroAPI.Services
 {
    
-    public class BraintreeService  
+    public class PaymentBraintreeService  
     {
         private readonly IConfiguration _config;
-        public BraintreeService(IConfiguration config)
+        public PaymentBraintreeService(IConfiguration config)
         {
             _config = config;
         }
@@ -33,7 +33,7 @@ namespace AppZeroAPI.Services
             return newGateway;
         }
 
-        public  async Task<Result<Braintree.Transaction>> Sale(CustomerCreditCard card, AppZeroAPI.Entities.Address address)
+        public  async Task<Result<Braintree.Transaction>> Sale(AppZeroAPI.Entities.CustomerCreditCard card, AppZeroAPI.Entities.Address address)
         {
 
 

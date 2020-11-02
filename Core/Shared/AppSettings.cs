@@ -13,6 +13,11 @@ using JsonConverterAttribute = Newtonsoft.Json.JsonConverterAttribute;
 
 namespace AppZeroAPI.Shared
 {
+    public class StripeKeys
+    {
+        public string PublicKey { get; set; }
+        public string PrivateKey { get; set; }
+    }
     public class JsonDeserializer
     {
         private IDictionary<string, object> jsonData { get; set; }
@@ -166,23 +171,7 @@ namespace AppZeroAPI.Shared
         [DescriptionAttribute("Completed")]
         Completed
     }
-    public enum PaymentMethod
-    {
-        [DescriptionAttribute("Cash on delivery")]
-        CashOnDelivery,
-        [DescriptionAttribute("Online banking")]
-        OnlineBanking,
-        [DescriptionAttribute("Payment gateway")]
-        PaymentGateway,
-        [DescriptionAttribute("Visa")]
-        Visa,
-        [DescriptionAttribute("Master card")]
-        MasterCard,
-        [DescriptionAttribute("Paypal")]
-        PayPal,
-        [DescriptionAttribute("Atm")]
-        Atm
-    }
+    
 
     public static class Langauge
     {

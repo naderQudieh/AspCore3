@@ -61,6 +61,7 @@ namespace AppZeroAPI.Setup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
+                c.EnableValidator(null);
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Web Api");
                 c.RoutePrefix = string.Empty;
                 c.DefaultModelsExpandDepth(-1);

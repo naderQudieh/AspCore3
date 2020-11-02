@@ -1,48 +1,268 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using System.Text;
+﻿using AppZeroAPI.Interfaces;
+using AppZeroAPI.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 using Newtonsoft.Json;
 using Stripe;
 using Stripe.Checkout;
-using AppZeroAPI.Shared;
-using System.IO;
 using AppZeroAPI.Shared.Enums;
-using AppZeroAPI.Models;
-using AppZeroAPI.Interfaces;
-using Microsoft.Extensions.Logging;
-using AppZeroAPI.Services;
 using AppZeroAPI.Shared.PayModel;
+using AppZeroAPI.Entities;
+using System.Text.Json;
+using PaymentMethod = Stripe.PaymentMethod;
 
 namespace AppZeroAPI.Controllers
 {
  
     [ApiController]
-    [Route("api/pay")]
-    public class PaymentController : BaseController
+    [Route("api/paystripe")]
+    public class TransStripeController : BaseController
     {
 
         public string SiteBaseUrl="";
-        private static readonly string  publicKey = "AXsvzo8YSrsScloTKO_Ufg4FXR1f4Le_DA9_j7Htli9qYQrXxTGbolQNueitJvY7ueTSFCR52zX92Nwm";
-        private static readonly string  secretKey = "EPmO4vP52YKdD6R0Y1rEq1JDhZPER4qup6T82s45Q2EXO7MZaJ7f5y8v_kW1pr-rbVvWjLxJWZAEaZBr";
-        private readonly ILogger<PaymentController> logger;
+        private static readonly string publicKey = "pk_test_51HiQuVAFZv6rpRFk3K1JeutsplKLBU7nFnti3wi6xZ6YW7sHUPJl433JQF4K9kSO0VsxX3edkIgrJrrbdzFPSGdt00a6LlFJ7W";
+        private static readonly string secretKey = "sk_test_51HiQuVAFZv6rpRFkxiu0mnkJ35QnwdZtPHaXaWaqam4OlEIsLBDB5qphjD9lc38UWwjZwJlrdpd6BvYwLWCzogVu0075iwLofB";
+        private readonly ILogger<TransStripeController> logger;
         private readonly IUnitOfWork unitOfWork;
         private readonly PaymentStripeService stripeService;
 
-        public PaymentController(PaymentStripeService stripeService, IUnitOfWork unitOfWork, ILogger<PaymentController> logger)
+        public TransStripeController(PaymentStripeService stripeService, IUnitOfWork unitOfWork, ILogger<TransStripeController> logger)
         {
+            StripeConfiguration.ApiKey = secretKey;// StripeOptions.SecretKey;
             logger.LogInformation("called PaymentController");
             this.logger = logger;
             this.unitOfWork = unitOfWork;
             this.stripeService = stripeService;
-
-            // StripeConfiguration.ApiKey = "sk_test_p9SPI9sPLAegWEXL6fZ5MIDm009gl2HLo5"; 
-            StripeConfiguration.ApiKey = StripeOptions.SecretKey;
         }
 
+
+
+        //[Route("pay")]
+        //public async Task<IActionResult> Pay(Stripe.PaymentMethod   pm)
+        //{
+        //    await stripeService.MakePayment(pm);
+        //    return Ok();
+        //}
+
+        [HttpPost("Processing")]
+        public async Task<IActionResult> ProcessingAsync()
+        {
+
+            PayModel paymodel = getPayModel();
+            var tokenoptions = new TokenCreateOptions
+            {
+                Card = new TokenCardOptions
+                {
+                    AddressLine1 = paymodel.AddressLine1,
+                    AddressLine2 = paymodel.AddressLine2,
+                    AddressCity = paymodel.AddressCity,
+                    AddressState = paymodel.AddressState,
+                    AddressZip = paymodel.AddressZip,
+                    Name = paymodel.Name,
+                    Number = paymodel.CardNumder,
+                    ExpMonth = paymodel.ExpMonth,
+                    ExpYear = paymodel.ExpYear,
+                    Cvc = paymodel.CVC
+                },
+            };
+
+            var serviceToken = new Stripe.TokenService();
+            Token stripeToken = await serviceToken.CreateAsync(tokenoptions);
+
+
+            paymodel.OrderName = "OrderName";
+            paymodel.OrderDescription = "OrderDescription";
+            paymodel.StripeToken = stripeToken.Id;
+            var Metadata = new Dictionary<string, string>
+            {
+                { "Name", paymodel.OrderName },
+                {"Price", paymodel.Amount.ToString() },
+                {"Description", paymodel.OrderDescription }
+            };
+
+
+            var chargeOptions = new ChargeCreateOptions
+            {
+
+                Amount = paymodel.Amount,
+                Currency = "USD",
+                Description = $"Buying {paymodel.OrderName} {paymodel.OrderDescription}",
+                Source = new AnyOf<string, CardCreateNestedOptions>(paymodel.StripeToken),
+                ReceiptEmail = paymodel.Email,
+                Metadata = Metadata
+            };
+            var chargeService = new ChargeService();
+            Charge charge = chargeService.Create(chargeOptions);
+
+            //foreach (var product in model.Products)
+            //{
+            //    ProductModel correctProduct = await _productsService.RetrieveAsync(product.Id);
+            //    if (correctProduct != product)
+            //    {
+            //        throw new CustomServerException("invalid order data");
+            //    }
+
+
+            //    product.Id = default(int);
+            //    await CreateOrderAsync(product);
+
+            //    var transaction = new TransactionModel { Currency = charge.Currency, Amount = charge.Amount, Status = charge.Status, Created = charge.Created, Description = charge.Description, Object = charge.Object, SourceId = charge.Source.Id };
+            //    await _transactionsService.CreateAsync(transaction);
+            //}
+            var response = await Task.FromResult(charge);
+            return Ok(response);
+        }
+       
+        [HttpPost("CreateCardPaymentMethod")]
+        public async Task<IActionResult> CreateCardPaymentMethod()
+        {
+            PayModel paymodel = getPayModel();
+            var options = new PaymentMethodCreateOptions
+            {
+                Customer = "Nahed Kadih",
+                Type = "card",
+                Card = new PaymentMethodCardOptions
+                {
+                    Number = paymodel.CardNumder,
+                    ExpMonth = paymodel.ExpMonth,
+                    ExpYear = paymodel.ExpYear,
+                    Cvc = paymodel.CVC,
+                },
+                BillingDetails = new PaymentMethodBillingDetailsOptions
+                {
+                    Name = "Nahed Kadih",
+                    Address = new Stripe.AddressOptions
+                    {
+                        PostalCode = paymodel.AddressZip,
+                        City = paymodel.AddressCity
+                    },
+                    Email = "markchristopher.cacal@gmail.com",
+                    Phone = "09067701852"
+                },
+            };
+            var paymentMethodService = new PaymentMethodService();
+            PaymentMethod paaymentMethoden = paymentMethodService.Create(options);
+
+            // `source` is obtained with Stripe.js; see https://stripe.com/docs/payments/accept-a-payment-charges#web-create-token
+            //var chargeCreateOptions = new ChargeCreateOptions
+            //{
+            //    Amount = 2000,
+            //    Currency = "usd",
+            //    Source = "tok_visa",
+            //    Description = "Charge for jenny.rosen@example.com",
+
+            //};
+            //var chargeService = new ChargeService();
+            //var iRes = chargeService.Create(chargeCreateOptions);
+
+            var response = await Task.FromResult(paaymentMethoden);
+            return Ok(response);
+        }
+        [HttpPost("stripecustomer")]
+        public async Task<IActionResult> CreateCustomer()
+        {
+            PayModel paymodel = getPayModel();
+            var client = CreateStripeClient(paymodel.Email, paymodel.Name, paymodel.CardNumder, paymodel.ExpMonth, paymodel.ExpYear, paymodel.CVC);
+            var response = await Task.FromResult(client);
+            return Ok(response);
+        }
+        [Route("secret")]
+        [HttpGet]
+        public ActionResult Secret()
+        {
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = 1099,
+                Currency = "USD",
+                Metadata = new Dictionary<string, string>
+            {
+              { "integration_check", "accept_a_payment" },
+            },
+            };
+
+            var service = new PaymentIntentService();
+            var paymentIntent = service.Create(options);
+            return Content(paymentIntent.ClientSecret);
+        }
+
+
+        [HttpGet]
+        [Route("CreatePaymentIntent")] 
+        public async Task<IActionResult> CreatePaymentIntent(long amount, string currency, string customerid)
+        {
+            var service = new PaymentIntentService();
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = amount,
+                Currency = currency,
+                PaymentMethodTypes = new List<string> { "card" },
+                Customer = customerid,
+                Metadata = new Dictionary<string, string>
+                {
+                  { "integration_check", "accept_a_payment" },
+                },
+            };
+            PaymentIntent PaymentIntent = service.Create(options);
+            var response = await Task.FromResult(PaymentIntent);
+            return Ok(response);
+        }
+
+        [Route("charge")]
+        [HttpPost]
+        public async Task<IActionResult> Charge(string stripeEmail, string stripeToken)
+        {
+           try
+            {
+                var options = new ChargeCreateOptions
+                {
+
+                    Amount = 123,
+                    Currency = "usd",
+                    Description = "ProductDescription",
+                    //Source = this.Token().Id, //Token = tok_visa //PAYMENT METHOD  pm_card_visa
+                    Source = new CardCreateNestedOptions
+                    {
+                        Name = "Nahed Kadih",
+                        AddressLine1 = "8360 Greensboro Dr",
+                        AddressLine2 = "626",
+                        AddressCity = "McLean",
+                        AddressState = "VA",
+                        AddressZip = "22102", 
+                        Number = "4242424242424242",
+                        ExpMonth = 1,
+                        ExpYear = 2021,
+                        Cvc = "234"
+                    },
+                    StatementDescriptor = "Custom descriptor",
+                    Metadata = new Dictionary<string, string>
+                      {
+                        { "OrderId", "6735" },
+                      },
+                };
+
+                var service = new ChargeService();
+                var charge = service.CreateAsync(options); 
+                var response = await Task.FromResult(charge); 
+                return Ok(charge);
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest();
+            }
+           
+            
+        }
+       
         [HttpPost("RegisterCard")]
         public async Task<IActionResult> RegisterCard(AppZeroAPI.Entities.Customer customer)
         {
@@ -121,8 +341,14 @@ namespace AppZeroAPI.Controllers
                 {
                     CaptureMethod = "manual",
                     SetupFutureUsage = "off_session",
+                    ReceiptEmail = "nkadih@yahoo.com",
+                    Metadata = new Dictionary<string, string>()
+                    {
+                      {"integration_check", "accept_a_payment"},
+                      { "OrderId", "6735" },
+                    }
                 },
-                Customer = "cus_123",
+                Customer = "cus_IJVSPOCEsKPVJW",
                 PaymentMethodTypes = new List<string> {
                     "card",
                 },
@@ -146,6 +372,7 @@ namespace AppZeroAPI.Controllers
             return Ok(session);
         }
         [HttpGet]
+      
         [Route("GetSession")]
         public async Task<IActionResult> GetSessionAsync()
         {
@@ -265,12 +492,10 @@ namespace AppZeroAPI.Controllers
             return Ok();
         }
 
-        private async Task<ActionResult> PayWithStripeCheckout(AppZeroAPI.Entities.CustomerOrder order)
+        private async Task<ActionResult> PayWithStripeCheckout([FromBody] CustomerOrder order)
         {
-            // Read Stripe API key from config
-            StripeConfiguration.ApiKey = StripeOptions.SecretKey;
-
-            // Add orderlines to Checkout session
+            
+            StripeConfiguration.ApiKey = StripeOptions.SecretKey; 
             var lines = new List<SessionLineItemOptions>();
             foreach (var ol in order.orderItems)
             {
@@ -299,15 +524,14 @@ namespace AppZeroAPI.Controllers
             };
 
             var service = new SessionService();
-            Session session = await service.CreateAsync(options);
-
+            Session session = await service.CreateAsync(options); 
             order.PaymentProviderSessionId = session.Id;
             //_context.Update(order);
             //await _context.SaveChangesAsync(); 
             return Ok(session);
         }
          
-        private async Task<ActionResult> PayWithStripeElements(AppZeroAPI.Entities.CustomerOrder order)
+        private async Task<ActionResult> PayWithStripeElements([FromBody]  AppZeroAPI.Entities.CustomerOrder order)
         {
             // Read Stripe API key from config
             StripeConfiguration.ApiKey = StripeOptions.SecretKey;
@@ -333,41 +557,7 @@ namespace AppZeroAPI.Controllers
             return Ok(intent);
         }
 
-
-        [HttpPost]
-        public async Task<ActionResult> Pay([FromBody] string order_id)
-        {
-
-            //var order = await _context.Orders
-            //    .Where(p => p.Id == payOrder.OrderId)
-            //    .Include(order => order.OrderLines)
-            //    .FirstOrDefaultAsync();
-
-            var order = new AppZeroAPI.Entities.CustomerOrder();
-            if (order == null)
-            {
-                return BadRequest("No order found");
-            }
-
-            switch (order.PaymentProvider)
-            {
-                case PaymentProviderType.StripeCheckout:
-                   
-                    return await PayWithStripeCheckout(order);
-
-                case PaymentProviderType.StripeElements:
-                   
-                    return await PayWithStripeElements(order);
-
-                case PaymentProviderType.Vipps:
-
-                    ///var initiate = await _vippsApiClient.InitiatePayment(order, _vippsSettings);
-                    /// return Ok(initiate);
-                    return Ok();
-                default:
-                    return BadRequest();
-            }
-        }
+ 
         [HttpPost("capture-order/{id}")]
         private Task<ActionResult> CapturePayment([FromRoute] int id)
         {
@@ -381,7 +571,7 @@ namespace AppZeroAPI.Controllers
             throw new NotImplementedException();
 
         }
-        private Task<ActionResult> PayWithVipps(AppZeroAPI.Entities.CustomerOrder order)
+        private Task<ActionResult> PayWithVipps([FromBody]  AppZeroAPI.Entities.CustomerOrder order)
         {
             throw new NotImplementedException();
 
@@ -391,7 +581,7 @@ namespace AppZeroAPI.Controllers
         {
             throw new NotImplementedException();
         }
-        private Customer StripeCustomer(AppZeroAPI.Entities.CustomerOrder order)
+        private Stripe.Customer StripeCustomer([FromBody]  AppZeroAPI.Entities.CustomerOrder order)
         {
             var options = new CustomerCreateOptions
             {
@@ -408,10 +598,9 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpPost("PurchaseItem")]
-        public  IActionResult  PurchaseItem(string json)
+        public  IActionResult  PurchaseItem([FromBody]  Order purchaseOrder)
         {
-            AppZeroAPI.Entities.CustomerOrder purchaseOrder = JsonConvert.DeserializeObject<AppZeroAPI.Entities.CustomerOrder>(json);
-
+        
             //var tokenVar = purchaseOrder.tokenVar;
             //Item[] items = purchaseOrder.Items;
 
@@ -492,11 +681,11 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpPost("cancel-subscription")]
-        public ActionResult<Subscription> CancelSubscription([FromBody] string subscription )
+        public ActionResult<Subscription> CancelSubscription([FromBody]  string Subscription   )
         {
             var service = new SubscriptionService();
-            return service.Cancel(subscription, null);
-            
+            var subscription = service.Cancel(Subscription, null);
+            return subscription;
         }
 
         [HttpPost("update-subscription")]
@@ -522,13 +711,119 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpPost("retrieve-customer-payment-method")]
-        public IActionResult RetrieveCustomerPaymentMethod([FromBody] string paymentMethod  )
+        public ActionResult<Stripe.PaymentMethod> RetrieveCustomerPaymentMethod([FromBody] string PaymentMethod  )
         {
             var service = new PaymentMethodService();
-            var res = service.Get(paymentMethod);
-            return Ok(res);
+            var paymentMethod = service.Get(PaymentMethod);
+            return paymentMethod;
+        }
+
+
+        private Token Token()
+        {
+            var options = new TokenCreateOptions
+            {
+                Card = new TokenCardOptions
+                {
+                    Name = "Nahed Kadih",
+                    Number = "4242424242424242",
+                    ExpMonth = 1,
+                    ExpYear = 2021, 
+                    Cvc = "234"
+                }
+            };
+
+            var service = new Stripe.TokenService();
+
+            return service.Create(options);
+        }
+
+        private async Task<string> CreateStripeClient(string email, string name, string cardNumber, int month, int year, string cvv)
+        {
+            var optionstoken = new TokenCreateOptions
+            {
+                Card = new TokenCardOptions
+                {
+                    Number = cardNumber,
+                    ExpMonth = month,
+                    ExpYear = year,
+                    Cvc = cvv
+                }
+            };
+
+            var servicetoken = new Stripe.TokenService();
+            Token stripetoken = await servicetoken.CreateAsync(optionstoken);
+
+            var customer = new CustomerCreateOptions
+            {
+                Email = email,
+                Name = name,
+                Source = stripetoken.Id,
+            };
+
+            Console.WriteLine(" stripetoken attributes :" + stripetoken);
+
+            var services = new CustomerService();
+            var created = services.Create(customer);
+
+
+            var option = new PaymentMethodCreateOptions
+            {
+                Type = "card",
+                Card = new PaymentMethodCardOptions
+                {
+                    Number = cardNumber,
+                    ExpMonth = month,
+                    ExpYear = year,
+                    Cvc = cvv,
+                },
+            };
+
+            var service = new PaymentMethodService();
+            var result = service.Create(option);
+
+            Console.WriteLine(" PaymentMethodService attributes :" + result);
+
+            var options = new PaymentMethodAttachOptions
+            {
+                Customer = created.Id,
+            };
+            var method = new PaymentMethodService();
+            method.Attach(
+              result.Id,
+              options
+            );
+
+            if (created.Id == null)
+            {
+                return "Failed";
+            }
+            else
+            {
+                return created.Id;
+            }
+        }
+        private PayModel getPayModel()
+        {
+            var paymodel = new PayModel();
+            paymodel.Amount = 200;
+            paymodel.ExpMonth = 2;
+            paymodel.ExpYear = 2022;
+            paymodel.Name = "Nahed Kadih";
+            paymodel.CardNumder = "4242424242424242";
+            paymodel.CVC = "234";
+            paymodel.OrderName = "OrderName";
+            paymodel.OrderDescription = "OrderDescription";
+            paymodel.AddressLine1 = "8360 Greensboro Dr";
+            paymodel.AddressLine2 = "626";
+            paymodel.AddressCity = "McLean";
+            paymodel.AddressState = "VA";
+            paymodel.AddressZip = "22102";
+            return paymodel;
         }
     }
+
+    
 }
  
    

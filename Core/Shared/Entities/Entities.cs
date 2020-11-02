@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using AppZeroAPI.Shared.Enums;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -6,8 +7,51 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AppZeroAPI.Entities
-{
+{ 
+    public class BaseEntity 
+    {
+        [Key]
+        public Int32? Id { get; set; }
 
+        public DateTime CreatedDate { get; set; }
+
+        public Int32? CreatedBy { get; set; }
+
+
+        public Int32? ModifiedBy { get; set; }
+
+        public DateTime ModifiedDate { get; set; }
+    }
+    
+ 
+    public class MailTemplates : BaseEntity
+    {
+        public MailTemplates()
+        {
+
+        }
+        public MailTemplates(Int32? id, string name, string description, string templateData, string subject
+            , int? createdBy, int? modifiedBy, DateTime createdDate, DateTime modifiedDate, int templateType)
+        {
+            this.Id = id;
+            this.Name = name;
+            this.Description = description;
+            this.TemplateData = templateData;
+            this.Subject = subject;
+            this.CreatedBy = createdBy;
+            this.ModifiedBy = modifiedBy;
+            this.CreatedDate = createdDate;
+            this.ModifiedDate = modifiedDate;
+            this.TemplateType = templateType;
+        }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string TemplateData { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public string Subject { get; set; }
+        public int TemplateType { get; set; }
+    }
     public class LookUps
     {
         public string code { get; set; }
@@ -29,6 +73,7 @@ namespace AppZeroAPI.Entities
         public Customer customer { get; set; }
         public List<CartItem> cartItems { get; set; }
     }
+
     [Table("customer_cart_items")]
     public class CartItem
     {
@@ -42,7 +87,7 @@ namespace AppZeroAPI.Entities
         public string discount_description { get; set; }
         public DateTime date_created { get; set; }
         public DateTime date_modified { get; set; }
-        //public List<CartItem> OrderItems { get; set; } 
+        public virtual Product Product { get; set; }
     }
     [Table("customers")]
     public class Customer
@@ -57,11 +102,11 @@ namespace AppZeroAPI.Entities
         public DateTime date_modified { get; set; }
     }
     [Table("customer_order_items")]
-    public class OrderItem
+    public class CustomerOrderItem
     {
         public long order_id { get; set; }
         public long product_id { get; set; }
-        public decimal qty { get; set; }
+        public long qty { get; set; }
         public decimal price { get; set; }
         public decimal discount { get; set; }
         public decimal total_payable { get; set; }
@@ -69,9 +114,10 @@ namespace AppZeroAPI.Entities
         public string discount_description { get; set; }
         public DateTime date_created { get; set; }
         public DateTime date_modified { get; set; }
+        public virtual Product Product { get; set; }
     }
     [Table("customer_orders")]
-    public class Order
+    public class CustomerOrder
     {
         public long order_id { get; set; }
         public long customer_id { get; set; }
@@ -82,12 +128,16 @@ namespace AppZeroAPI.Entities
         public decimal discount_amount { get; set; }
         public decimal total_payable { get; set; }
         public string order_status { get; set; }
+        public OrderStatus Status { get; set; } = OrderStatus.Draft;
         public string confirm_no { get; set; }
         public string PaypalToken { get; set; }
         public DateTime date_created { get; set; }
         public DateTime date_modified { get; set; }
-
-        //public List<OrderItem> OrderItems { get; set; }
+        public string PaymentProviderSessionId { get; set; }
+        public virtual List<CustomerOrderItem> orderItems { get; set; }
+        public virtual Customer customer { get; set; }
+        public virtual PaymentProviderType PaymentProvider { get; set; }
+        
         //public Address ship_to { get; set; }
         //public Address bill_to { get; set; }
 
@@ -109,30 +159,7 @@ namespace AppZeroAPI.Entities
         public DateTime date_created { get; set; }
         public DateTime date_modified { get; set; }
     }
-    [JsonConverter(typeof(StringEnumConverter))] 
-    public enum PaymentStatus
-    {
-        AUTHORIZED,
-        AUTHORIZING,
-        SETTLED,
-        SETTLING,
-        SETTLEMENT_CONFIRMED,
-        SETTLEMENT_PENDING,
-        SUBMITTED_FOR_SETTLEMENT
-    }
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum AddressType
-    {
-        Billing,
-        Shipping
-    }
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum PaymentMethod
-    {
-        Cash,
-        CreditCrad,
-        Bank
-    }
+    
     public class PurchaseData
     {
         public string payment_method_nonce;

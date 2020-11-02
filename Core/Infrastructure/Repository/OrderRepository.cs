@@ -22,17 +22,17 @@ namespace AppZeroAPI.Repository
         }
 
 
-        public async Task<IEnumerable<Order>> GetAllAsync()
+        public async Task<IEnumerable<AppZeroAPI.Entities.CustomerOrder>> GetAllAsync()
         {
 
             //logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.GetAllAsync<Order>();
+                var result = await connection.GetAllAsync<AppZeroAPI.Entities.CustomerOrder>();
                 return result.ToList();
             }
         }
-        private async Task<IEnumerable<Order>> GetAllAsync2()
+        private async Task<IEnumerable<AppZeroAPI.Entities.CustomerOrder>> GetAllAsync2()
         {
 
             var sql = "SELECT * FROM Orders";
@@ -40,12 +40,12 @@ namespace AppZeroAPI.Repository
             logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.QueryAsync<Order>(sql);
+                var result = await connection.QueryAsync<AppZeroAPI.Entities.CustomerOrder>(sql);
                 return result.ToList();
             }
         }
 
-        public async Task<int> AddAsync(Order entity)
+        public async Task<int> AddAsync(AppZeroAPI.Entities.CustomerOrder entity)
         {
             entity.date_created = DateTime.UtcNow;
             entity.date_modified = DateTime.UtcNow;
@@ -56,7 +56,7 @@ namespace AppZeroAPI.Repository
                 return result;
             }
         }
-        private async Task<int> AddAsync2(Order entity)
+        private async Task<int> AddAsync2(AppZeroAPI.Entities.CustomerOrder entity)
         {
             entity.date_created = DateTime.UtcNow;
             entity.date_modified = DateTime.UtcNow;
@@ -78,7 +78,7 @@ namespace AppZeroAPI.Repository
         {
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.DeleteAsync(new Order() { order_id = 1 });
+                var result = await connection.DeleteAsync(new AppZeroAPI.Entities.CustomerOrder() { order_id = 1 });
                 return result;
             }
         }
@@ -93,27 +93,27 @@ namespace AppZeroAPI.Repository
         }
 
 
-        public async Task<Order> GetByIdAsync(long id)
+        public async Task<AppZeroAPI.Entities.CustomerOrder> GetByIdAsync(long id)
         {
             using (var connection = this.GetOpenConnection())
             {
 
-                var result = await connection.GetAsync<Order>(new { id = id });
+                var result = await connection.GetAsync<AppZeroAPI.Entities.CustomerOrder>(new { id = id });
                 return result;
             }
         }
-        private async Task<Order> GetByIdAsync2(long id)
+        private async Task<AppZeroAPI.Entities.CustomerOrder> GetByIdAsync2(long id)
         {
             var sql = "SELECT * FROM Orders WHERE Id = @Id";
             using (var connection = this.GetOpenConnection())
             {
 
-                var result = await connection.QuerySingleOrDefaultAsync<Order>(sql, new { Id = id });
+                var result = await connection.QuerySingleOrDefaultAsync<AppZeroAPI.Entities.CustomerOrder>(sql, new { Id = id });
                 return result;
             }
         }
 
-        public async Task<bool> UpdateAsync(Order entity)
+        public async Task<bool> UpdateAsync(AppZeroAPI.Entities.CustomerOrder entity)
         {
            // entity.ModifiedOn = DateTime.UtcNow;
             var sql = "UPDATE Orders SET Name = @Name, Description = @Description, Barcode = @Barcode, Rate = @Rate, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
@@ -123,5 +123,74 @@ namespace AppZeroAPI.Repository
                 return rows != 0;
             }
         }
+
+        public async Task<AppZeroAPI.Entities.CustomerOrder> CreateOrder(Guid userUid, string ipAddress)
+        {
+            const string sql = @"
+DECLARE @OrderId TABLE ([Id] INT);
+DECLARE @UserId INT = (SELECT Id FROM SiteUser WHERE [Uid] = @UserUid AND SiteId = @SiteId);
+DECLARE @Email NVARCHAR(200) = (SELECT EmailAddress FROM SiteUser WHERE [Uid] = @UserUid AND SiteId = @SiteId);
+INSERT INTO Orders
+OUTPUT INSERTED.[Id] INTO @OrderId
+SELECT NEWID(), @UserId, NULL, NULL, @Email, 1, GETDATE(), NULL, NULL, NULL, NULL, 0.00, NULL, 8.99, NULL, 0.00, @IPAddress, GETDATE(), GETDATE();
+SELECT Id, [Uid], UserId, ShippingId, BillingId, Email, OrderStateId, OrderDate, ProcessedDate, 
+    TokenId, CardAuth, Subtotal, Tax, ShippingCost, Discount, Total, IPAddress, CreatedDate, LastModifiedDate
+FROM Orders WHERE Id = (SELECT Id FROM @OrderId);
+";
+            using (var connection = this.GetOpenConnection())
+            {
+
+                var result = await connection.QuerySingleOrDefaultAsync<AppZeroAPI.Entities.CustomerOrder>(sql, new { Id = 1 });
+                return result;
+            }
+        }
+
+        public async Task<List<CustomerOrderItem>> CreateOrderItemsFromCart(Guid userUid, int orderId)
+        {
+            const string sql = @"
+DECLARE @OrderItemIds TABLE ([Id] INT);
+--insert order items from cart
+INSERT INTO OrderItem
+OUTPUT INSERTED.[Id] INTO @OrderItemIds
+SELECT NEWID(), @OrderId, ci.Id, ci.Quantity, ci.Price, ci.Price * .11, 8.99, NULL, '', 0, GETDATE()
+FROM CartItem ci 
+LEFT JOIN Cart c ON c.Id = ci.CartId 
+WHERE 1=1 
+AND c.UserUid = @UserUid 
+AND ci.Active = 1 
+AND ci.Quantity > 0
+AND ci.Price >= 0;
+--update orders totals from order items
+;WITH SumOrderItems AS (
+	SELECT OrderId, SUM(ISNULL(Price, 0)) AS Subtotal, SUM(ISNULL(Tax, 0)) AS Tax, SUM(ISNULL(Discount, 0)) AS Discount FROM OrderItem WHERE OrderId = @OrderId GROUP BY OrderId 
+)
+UPDATE
+    Orders
+SET
+    Subtotal = soi.Subtotal, Tax = soi.Tax, Discount = soi.Discount, Total = soi.Subtotal + soi.Tax + o.ShippingCost - soi.Discount
+FROM
+    Orders o
+INNER JOIN
+    SumOrderItems soi
+ON 
+    o.Id = soi.OrderId;
+--return order items
+SELECT oi.Id, oi.[Uid], oi.OrderId, oi.CartItemId, oi.Quantity, oi.Price, oi.Tax, oi.ShippingCost, oi.Discount, oi.Tracking, oi.IsBackorder, oi.CreatedDate,
+    si.Name, si.Description, si.SmallImg
+FROM OrderItem oi
+JOIN CartItem ci ON ci.Id = oi.CartItemId
+JOIN StoreItem si ON si.Id = ci.ItemId
+WHERE OrderId = @OrderId;
+";
+            using (var connection = this.GetOpenConnection())
+            {
+
+                var result = await connection.QueryAsync<CustomerOrderItem>(sql, new { Id = 1 });
+                return result.ToList();
+            }
+           
+        }
+         
+       
     }
 }

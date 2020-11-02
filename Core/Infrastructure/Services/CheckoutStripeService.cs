@@ -9,36 +9,33 @@ using System.Threading.Tasks;
 using PayPalHttp;
 using System;
 
-namespace Naobiz.Services
+namespace AppZeroAPI.Services
 {
-    public class PaypalService
+    public class CheckoutStripeService
     {
-        private static readonly string ClientId =
-          "AXsvzo8YSrsScloTKO_Ufg4FXR1f4Le_DA9_j7Htli9qYQrXxTGbolQNueitJvY7ueTSFCR52zX92Nwm";
-
-        private static readonly string ClientSecret =
-            "EPmO4vP52YKdD6R0Y1rEq1JDhZPER4qup6T82s45Q2EXO7MZaJ7f5y8v_kW1pr-rbVvWjLxJWZAEaZBr";
+        private static readonly string ClientId =   "AXsvzo8YSrsScloTKO_Ufg4FXR1f4Le_DA9_j7Htli9qYQrXxTGbolQNueitJvY7ueTSFCR52zX92Nwm";
+        private static readonly string ClientSecret = "EPmO4vP52YKdD6R0Y1rEq1JDhZPER4qup6T82s45Q2EXO7MZaJ7f5y8v_kW1pr-rbVvWjLxJWZAEaZBr";
 
         readonly PayPalHttpClient m_PayPalHttpClient;
         readonly ApplicationContext m_ApplicationContext;
         readonly decimal m_TaxRate;
 
-        public PaypalService()
-        {
+        //public void PaypalService()
+        //{
              
-            string SiteUrl = "http://www.appzero.com/api/payments/";
-            var environment = new LiveEnvironment(ClientId, ClientSecret);
-            m_PayPalHttpClient = new PayPalHttpClient(environment);
-            m_ApplicationContext = new ApplicationContext
-            {
-                BrandName = "Naobiz",
-                ReturnUrl =  SiteUrl + "comporder",
-                CancelUrl =  SiteUrl + "canorder"
-            };
-            m_TaxRate = 5.5M ;
-        }
+        //    string SiteUrl = "http://www.appzero.com/api/payments/";
+        //    var environment = new LiveEnvironment(ClientId, ClientSecret);
+        //    m_PayPalHttpClient = new PayPalHttpClient(environment);
+        //    m_ApplicationContext = new ApplicationContext
+        //    {
+        //        BrandName = "Naobiz",
+        //        ReturnUrl =  SiteUrl + "comporder",
+        //        CancelUrl =  SiteUrl + "canorder"
+        //    };
+        //    m_TaxRate = 5.5M ;
+        //}
        
-        public async Task<string> CreateOrder(AppZeroAPI.Entities.Order order)
+        public async Task<string> CreateOrder(AppZeroAPI.Entities.CustomerOrder order)
         {
             var request = new OrdersCreateRequest();
             request.Prefer("return=representation");
@@ -50,7 +47,7 @@ namespace Naobiz.Services
             return link.Href;
         }
 
-        private OrderRequest CreateOrderRequest(AppZeroAPI.Entities.Order order)
+        private OrderRequest CreateOrderRequest(AppZeroAPI.Entities.CustomerOrder order)
         {
             var request = new OrderRequest
             {

@@ -139,6 +139,30 @@ namespace AppZeroAPI.Controllers
             throw new NotImplementedException();
         }
 
+        //public DateTime GetExpiryTimestamp(string accessToken)
+        //{
+        //    try
+        //    {
+        //        IJwtValidator _validator = new JwtValidator(_serializer, _provider);
+        //        IJwtDecoder decoder = new JwtDecoder(_serializer, _validator, _urlEncoder, _algorithm);
+        //        var token = decoder.DecodeToObject<JwtToken>(accessToken);
+        //        DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(token.exp);
+        //        return dateTimeOffset.LocalDateTime;
+        //    }
+        //    catch (TokenExpiredException)
+        //    {
+        //        return DateTime.MinValue;
+        //    }
+        //    catch (SignatureVerificationException)
+        //    {
+        //        return DateTime.MinValue;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // ... remember to handle the generic exception ...
+        //        return DateTime.MinValue;
+        //    }
+        //}
         //[Authorize]
         //[HttpPost("tokens/{id}")]
         //public IActionResult GetRefreshTokens(string id)

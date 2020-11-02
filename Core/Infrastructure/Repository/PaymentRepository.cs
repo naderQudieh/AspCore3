@@ -18,9 +18,9 @@ namespace AppZeroAPI.Repository
     public class PaymentRepository : BaseRepository, IPaymentRepository
     {
         
-        private readonly BraintreeService braintreeService;
+        private readonly PaymentBraintreeService braintreeService;
         private readonly ILogger<PaymentRepository> logger;
-        public PaymentRepository(BraintreeService braintreeService , IConfiguration configuration, ILogger<PaymentRepository> logger) : base(configuration)
+        public PaymentRepository(PaymentBraintreeService braintreeService , IConfiguration configuration, ILogger<PaymentRepository> logger) : base(configuration)
         {
             this.braintreeService = braintreeService;
             this.logger = logger;

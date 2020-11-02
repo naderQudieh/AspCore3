@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 using WebApi.Shared;
 
 namespace AppZeroAPI
@@ -39,20 +40,24 @@ namespace AppZeroAPI
             services.ConfigureAutoMapper();
             services.ConfigureFluentMapper();
             services.ConfigureCors();
+          
             services.AddControllers().ConfigureApiBehaviorOptions(options =>
             {
                 options.SuppressConsumesConstraintForFormFileParameters = true;
                 options.SuppressInferBindingSourcesForParameters = true;
                 options.SuppressModelStateInvalidFilter = true;
-            })
+            }) 
+                .AddNewtonsoftJson(options =>
+                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
                 .AddJsonOptions(x => x.JsonSerializerOptions.IgnoreNullValues = true)
+                
                 .AddMvcOptions(options =>
                 {
+                    // NamingStrategy = new SnakeCaseNamingStrategy(),
                     options.InputFormatters.Insert(0, new JsonStringInputFormatter());
                 });
             var appSettingsSection = Configuration.GetSection("JwtOptions");
-            services.Configure<JwtOptions>(appSettingsSection);
-
+            services.Configure<JwtOptions>(appSettingsSection); 
             services.ConfigureAuth(Configuration);
             // configure DI for application services
             //services.AddScoped<IUserService, UserService>();

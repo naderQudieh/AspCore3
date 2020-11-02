@@ -19,13 +19,17 @@ namespace AppZeroAPI.Setup
 
         public static void AddCoreServices(this IServiceCollection services)
         {
-            services.AddSingleton<TokenService>();
-            services.AddSingleton<BraintreeService>();  
+         
+
+            services.AddSingleton<TokenService>(); 
             services.AddSingleton<EncryptorService>();
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IAuthService, AuthService>();
-           
-            
+
+            services.AddSingleton<PaymentBraintreeService>();
+            services.AddSingleton<PaymentPaypalService>();
+            services.AddSingleton<PaymentStripeService>();
+
         }
         public static void AddDataAccess(this IServiceCollection services)
         {

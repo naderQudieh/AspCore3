@@ -6,7 +6,7 @@ using System.Configuration;
 using System.Net;
 using System.Net.Mail;
 
-namespace AppZeroAPI.Repository
+namespace AppZeroAPI.Services
 {
     public class EmailService : IEmailService
     {

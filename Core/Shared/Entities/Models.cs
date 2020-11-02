@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AppZeroAPI.Entities;
+using AppZeroAPI.Shared.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -13,8 +15,7 @@ using System.Runtime.Serialization;
 
 namespace AppZeroAPI.Models
 {
-    
-    
+   
     public class ResetPasswordRequest
     {
         [Required]
