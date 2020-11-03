@@ -68,40 +68,40 @@ namespace AppZeroAPI.Repository
         }
 
 
-        public async Task<bool> DeleteByIdAsync(long id)
+        public async Task<bool> DeleteByIdAsync(string rec_id)
         {
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.DeleteAsync(new Product() { product_Id = 1 });
+                var result = await connection.DeleteAsync(new Product() { rec_id = rec_id });
                 return result;
             }
         }
-        private async Task<int> DeleteByIdAsync2(long id)
+        private async Task<int> DeleteByIdAsync2(string rec_id)
         {
             var sql = "DELETE FROM Products WHERE Id = @Id";
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.ExecuteAsync(sql, new { Id = id });
+                var result = await connection.ExecuteAsync(sql, new { rec_id = rec_id });
                 return result;
             }
         }
 
 
-        public async Task<Product> GetByIdAsync(long id)
+        public async Task<Product> GetByIdAsync(string rec_id)
         {
             using (var connection = this.GetOpenConnection())
             {
 
-                var result = await connection.GetAsync<Product>(new { id = id });
+                var result = await connection.GetAsync<Product>(new { rec_id = rec_id });
                 return result;
             }
         }
-        private async Task<Product> GetByIdAsync2(long id)
+        private async Task<Product> GetByIdAsync2(string rec_id)
         {
             var sql = "SELECT * FROM Products WHERE Id = @Id";
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.QuerySingleOrDefaultAsync<Product>(sql, new { Id = id });
+                var result = await connection.QuerySingleOrDefaultAsync<Product>(sql, new { rec_id = rec_id });
                 return result;
             }
         }

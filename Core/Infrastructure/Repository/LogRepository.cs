@@ -1,4 +1,4 @@
-﻿using AppZeroAPI.Models;
+﻿using AppZeroAPI.Entities;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

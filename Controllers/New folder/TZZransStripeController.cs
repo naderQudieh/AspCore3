@@ -19,35 +19,40 @@ using AppZeroAPI.Shared.PayModel;
 using AppZeroAPI.Entities;
 using System.Text.Json;
 using PaymentMethod = Stripe.PaymentMethod;
-using Customer = AppZeroAPI.Entities.Customer;
-using Order = Stripe.Order ;
-using CustomerService = Stripe.CustomerService;
+using Customer = Stripe.Customer;
 
 namespace AppZeroAPI.Controllers
 {
  
     [ApiController]
     [Route("api/paystripe")]
-    public class TransStripeController : BaseController
+    public class TZZransStripeController : BaseController
     {
 
         public string SiteBaseUrl="";
         private static readonly string publicKey = "pk_test_51HiQuVAFZv6rpRFk3K1JeutsplKLBU7nFnti3wi6xZ6YW7sHUPJl433JQF4K9kSO0VsxX3edkIgrJrrbdzFPSGdt00a6LlFJ7W";
         private static readonly string secretKey = "sk_test_51HiQuVAFZv6rpRFkxiu0mnkJ35QnwdZtPHaXaWaqam4OlEIsLBDB5qphjD9lc38UWwjZwJlrdpd6BvYwLWCzogVu0075iwLofB";
-        private readonly ILogger<TransStripeController> logger;
+        private readonly ILogger<TZZransStripeController> logger;
         private readonly IUnitOfWork unitOfWork;
         private readonly PaymentStripeService stripeService;
 
-        public TransStripeController(PaymentStripeService stripeService, IUnitOfWork unitOfWork, ILogger<TransStripeController> logger)
+        public TZZransStripeController(PaymentStripeService stripeService, IUnitOfWork unitOfWork, ILogger<TZZransStripeController> logger)
         {
             StripeConfiguration.ApiKey = secretKey;// StripeOptions.SecretKey;
             logger.LogInformation("called PaymentController");
             this.logger = logger;
             this.unitOfWork = unitOfWork;
-            //this.stripeService = stripeService;
+            this.stripeService = stripeService;
         }
-         
- 
+
+
+
+        //[Route("pay")]
+        //public async Task<IActionResult> Pay(Stripe.PaymentMethod   pm)
+        //{
+        //    await stripeService.MakePayment(pm);
+        //    return Ok();
+        //}
 
         [HttpPost("Processing")]
         public async Task<IActionResult> ProcessingAsync()
@@ -220,7 +225,7 @@ namespace AppZeroAPI.Controllers
             };
 
             var service = new CustomerService();
-            Stripe.Customer customer = await service.CreateAsync(options);
+            Customer customer = await service.CreateAsync(options);
             var response = await Task.FromResult(customer);
             return Ok(response);
         }
@@ -300,7 +305,7 @@ namespace AppZeroAPI.Controllers
                         ExpYear = 2021,
                         Cvc = "234"
                     },
-                    StatementDescriptor = "WeSoft Charges Conf No- ",
+                    StatementDescriptor = "Custom descriptor",
                     Metadata = new Dictionary<string, string>
                       {
                         { "OrderId", "6735" },
@@ -322,9 +327,9 @@ namespace AppZeroAPI.Controllers
         }
        
         [HttpPost("RegisterCard")]
-        public async Task<IActionResult> RegisterCard(Customer customer)
+        public async Task<IActionResult> RegisterCard(AppZeroAPI.Entities.Customer customer)
         {
-            var customerId = customer.rec_id;  
+            var customerId = customer.customer_id;  
             var options = new SetupIntentCreateOptions
             {
                 Customer = customerId.ToString(),
@@ -570,7 +575,7 @@ namespace AppZeroAPI.Controllers
             }
             var options = new SessionCreateOptions
             {
-                ClientReferenceId = order.rec_id.ToString(),
+                ClientReferenceId = order.order_id.ToString(),
                 CustomerEmail = order.customer.email ,
                 Locale = "nb",
                 PaymentMethodTypes = new List<string> {
@@ -589,7 +594,7 @@ namespace AppZeroAPI.Controllers
             return Ok(session);
         }
          
-        private async Task<ActionResult> PayWithStripeElements([FromBody]  CustomerOrder order)
+        private async Task<ActionResult> PayWithStripeElements([FromBody]  AppZeroAPI.Entities.CustomerOrder order)
         {
             // Read Stripe API key from config
             StripeConfiguration.ApiKey = StripeOptions.SecretKey;
@@ -605,7 +610,7 @@ namespace AppZeroAPI.Controllers
                 StatementDescriptor = "Losvik kommune",
                 Metadata = new Dictionary<String, String>()
                 {
-                    { "OrderId", order.rec_id.ToString()}
+                    { "OrderId", order.order_id.ToString()}
                 }
             };
 
@@ -629,17 +634,17 @@ namespace AppZeroAPI.Controllers
             throw new NotImplementedException();
 
         }
-        private Task<ActionResult> PayWithVipps([FromBody]  CustomerOrder order)
+        private Task<ActionResult> PayWithVipps([FromBody]  AppZeroAPI.Entities.CustomerOrder order)
         {
             throw new NotImplementedException();
 
             // return BadRequest();
         }
-        private Task<ActionResult> PayWithStripeBilling(CustomerOrder order)
+        private Task<ActionResult> PayWithStripeBilling(AppZeroAPI.Entities.CustomerOrder order)
         {
             throw new NotImplementedException();
         }
-        private Stripe.Customer StripeCustomer([FromBody]  CustomerOrder order)
+        private Stripe.Customer StripeCustomer([FromBody]  AppZeroAPI.Entities.CustomerOrder order)
         {
             var options = new CustomerCreateOptions
             {
@@ -656,7 +661,7 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpPost("PurchaseItem")]
-        public  IActionResult  PurchaseItem([FromBody] CustomerOrder  purchaseOrder)
+        public  IActionResult  PurchaseItem([FromBody]  Order purchaseOrder)
         {
         
             //var tokenVar = purchaseOrder.tokenVar;
@@ -691,7 +696,7 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpPost("create-subscription")]
-        public ActionResult<Subscription> CreateSubscription([FromBody]  CreateSubscriptionRequest req)
+        public ActionResult<Subscription> CreateSubscription([FromBody] CreateSubscriptionRequest req)
         {
             // Attach payment method
             var options = new PaymentMethodAttachOptions
@@ -739,18 +744,18 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpPost("cancel-subscription")]
-        public ActionResult<Subscription> CancelSubscription([FromBody]  string _subscription   )
+        public ActionResult<Subscription> CancelSubscription([FromBody]  string Subscription   )
         {
             var service = new SubscriptionService();
-            var subscription = service.Cancel(_subscription, null);
+            var subscription = service.Cancel(Subscription, null);
             return subscription;
         }
 
         [HttpPost("update-subscription")]
-        public ActionResult<Subscription> UpdateSubscription([FromBody] string _subscription, string NewPrice)
+        public ActionResult<Subscription> UpdateSubscription([FromBody] string Subscription, string NewPrice)
         {
             var service = new SubscriptionService();
-            var subscription = service.Get(_subscription);
+            var subscription = service.Get(Subscription);
 
             var options = new SubscriptionUpdateOptions
             {
@@ -764,15 +769,16 @@ namespace AppZeroAPI.Controllers
                     }
                 }
             };
-            var updatedSubscription = service.Update(_subscription, options);
+            var updatedSubscription = service.Update(Subscription, options);
             return updatedSubscription;
         }
 
         [HttpPost("retrieve-customer-payment-method")]
-        public ActionResult<Stripe.PaymentMethod> RetrieveCustomerPaymentMethod([FromBody] string paymentMethod)
+        public ActionResult<Stripe.PaymentMethod> RetrieveCustomerPaymentMethod([FromBody] string PaymentMethod  )
         {
             var service = new PaymentMethodService();
-            return service.Get(paymentMethod); 
+            var paymentMethod = service.Get(PaymentMethod);
+            return paymentMethod;
         }
 
 

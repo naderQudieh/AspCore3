@@ -12,18 +12,22 @@ namespace AppZeroAPI.Repository
         public IPaymentRepository Payments { get; }
         public ICustomerRepository Customers { get; }
         public ILookupsRepository Lookups { get; }
+        public ICartRepository Carts { get; }
         public UnitOfWork(IProductRepository productRepository, IOrderRepository orderRepository, 
             IUserRepository userRepository, IPaymentRepository paymentRepository,
             ICustomerRepository customerRepository, ILookupsRepository lookupsRepository
+            , ICartRepository cartRepository
 
             )
         {
-            Payments = paymentRepository;
-            Products = productRepository;
-            Users = userRepository;
-            Orders = orderRepository;
-            Customers = customerRepository;
             Lookups = lookupsRepository;
+            Users = userRepository;
+            Customers = customerRepository;
+            Products = productRepository; 
+            Orders = orderRepository;
+            Carts = cartRepository;
+            Payments = paymentRepository;
+           
         }
 
     }

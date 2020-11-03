@@ -22,30 +22,72 @@ namespace AppZeroAPI.Repository
         }
 
 
-        public async Task<IEnumerable<AppZeroAPI.Entities.CustomerOrder>> GetAllAsync()
+        public async Task<IEnumerable<CustomerOrder>> GetAllAsync()
         {
 
             //logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.GetAllAsync<AppZeroAPI.Entities.CustomerOrder>();
+                var result = await connection.GetAllAsync<CustomerOrder>();
                 return result.ToList();
             }
         }
-        private async Task<IEnumerable<AppZeroAPI.Entities.CustomerOrder>> GetAllAsync2()
+
+        public async Task<IEnumerable<CustomerOrder>> GetOrdersForCustomer(string _customer_id)
         {
 
-            var sql = "SELECT * FROM Orders";
-
-            logger.LogInformation(sql);
+            //logger.LogInformation(sql);
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.QueryAsync<AppZeroAPI.Entities.CustomerOrder>(sql);
+                var result = await connection.QueryAsync<CustomerOrder>(_customer_id );
                 return result.ToList();
             }
         }
 
-        public async Task<int> AddAsync(AppZeroAPI.Entities.CustomerOrder entity)
+        public async Task<CustomerOrder> GetOrderDetails(string order_id, bool includeItems = false)
+        {
+            using (var connection = this.GetOpenConnection())
+            {
+                if (!includeItems)
+                {
+                    var sqlQuery = @"SELECT *
+                                FROM customer_orders
+                                WHERE rec_id = @order_id";
+
+                    var result = await connection.QueryAsync<CustomerOrder>(sqlQuery, new { order_id });
+
+                    return result.FirstOrDefault();
+                }
+                else
+                {
+                    var sqlQuery = @" SELECT * FROM customer_orders o
+                    LEFT JOIN customer_order_items oi on o.rec_id = oi.order_id
+                    WHERE c.rec_id = @rec_id";
+
+                    var orderItems = new List<CustomerOrderItem>();
+
+                    var orders = await connection.QueryAsync<CustomerOrder, CustomerOrderItem, CustomerOrder>(
+                            sqlQuery, (order, orderItem) =>
+                            {
+                                orderItems.Add(orderItem);
+                                return order;
+                            },
+                            param: new { order_id });
+
+                    var result = orders.FirstOrDefault();
+                    if (result != null)
+                    {
+                        result.orderItems = orderItems;
+                    }
+
+                    return result;
+                }
+            }
+
+        }
+      
+
+        public async Task<int> AddAsync(CustomerOrder entity)
         {
             entity.date_created = DateTime.UtcNow;
             entity.date_modified = DateTime.UtcNow;
@@ -56,64 +98,34 @@ namespace AppZeroAPI.Repository
                 return result;
             }
         }
-        private async Task<int> AddAsync2(AppZeroAPI.Entities.CustomerOrder entity)
+       
+
+
+        public async Task<bool> DeleteByIdAsync(string rec_id)
         {
-            entity.date_created = DateTime.UtcNow;
-            entity.date_modified = DateTime.UtcNow;
-            var sql = @"Insert into Orders ( ,name
-                        ,description,barcode,qty_in_stock ,unit_price ,imge_url
-                        ,department_id,date_created,date_modified
-                        ) VALUES (
-                            @name,@description  ,@barcode  ,@qty_in_stock ,@unit_price 
-                            ,@imge_url ,@department_id ,@date_created ,@date_modified;)";
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.ExecuteAsync(sql, entity);
+                var result = await connection.DeleteAsync(new CustomerOrder() { rec_id = rec_id });
+                return result;
+            }
+        }
+        
+
+
+        public async Task<CustomerOrder> GetByIdAsync(string rec_id  )
+        {
+            using (var connection = this.GetOpenConnection())
+            {
+
+                var result = await connection.GetAsync<CustomerOrder>(new { id = rec_id });
                 return result;
             }
         }
 
 
-        public async Task<bool> DeleteByIdAsync(long id)
-        {
-            using (var connection = this.GetOpenConnection())
-            {
-                var result = await connection.DeleteAsync(new AppZeroAPI.Entities.CustomerOrder() { order_id = 1 });
-                return result;
-            }
-        }
-        private async Task<int> DeleteByIdAsync2(long id)
-        {
-            var sql = "DELETE FROM Orders WHERE Id = @Id";
-            using (var connection = this.GetOpenConnection())
-            {
-                var result = await connection.ExecuteAsync(sql, new { Id = id });
-                return result;
-            }
-        }
+      
 
-
-        public async Task<AppZeroAPI.Entities.CustomerOrder> GetByIdAsync(long id)
-        {
-            using (var connection = this.GetOpenConnection())
-            {
-
-                var result = await connection.GetAsync<AppZeroAPI.Entities.CustomerOrder>(new { id = id });
-                return result;
-            }
-        }
-        private async Task<AppZeroAPI.Entities.CustomerOrder> GetByIdAsync2(long id)
-        {
-            var sql = "SELECT * FROM Orders WHERE Id = @Id";
-            using (var connection = this.GetOpenConnection())
-            {
-
-                var result = await connection.QuerySingleOrDefaultAsync<AppZeroAPI.Entities.CustomerOrder>(sql, new { Id = id });
-                return result;
-            }
-        }
-
-        public async Task<bool> UpdateAsync(AppZeroAPI.Entities.CustomerOrder entity)
+        public async Task<bool> UpdateAsync(CustomerOrder entity)
         {
            // entity.ModifiedOn = DateTime.UtcNow;
             var sql = "UPDATE Orders SET Name = @Name, Description = @Description, Barcode = @Barcode, Rate = @Rate, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
@@ -124,7 +136,7 @@ namespace AppZeroAPI.Repository
             }
         }
 
-        public async Task<AppZeroAPI.Entities.CustomerOrder> CreateOrder(Guid userUid, string ipAddress)
+        public async Task<CustomerOrder> CreateOrder(Guid userUid, string ipAddress)
         {
             const string sql = @"
 DECLARE @OrderId TABLE ([Id] INT);
@@ -140,7 +152,7 @@ FROM Orders WHERE Id = (SELECT Id FROM @OrderId);
             using (var connection = this.GetOpenConnection())
             {
 
-                var result = await connection.QuerySingleOrDefaultAsync<AppZeroAPI.Entities.CustomerOrder>(sql, new { Id = 1 });
+                var result = await connection.QuerySingleOrDefaultAsync<CustomerOrder>(sql, new { Id = 1 });
                 return result;
             }
         }

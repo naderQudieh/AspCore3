@@ -40,6 +40,7 @@ namespace AppZeroAPI.Controllers
         [Route("Authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] LoginDto model)
         {
+           
             if (string.IsNullOrEmpty(model.username)
                 || string.IsNullOrEmpty(model.password))
             {
@@ -83,6 +84,16 @@ namespace AppZeroAPI.Controllers
         public async Task<IActionResult> Register(string Name, string Email, string Password, string ConfirmPassword)
         {
 
+            //if (!ModelState.IsValid)
+            //{
+            //    var response =  new  
+            //    {
+            //        Status = 403,
+            //        Message = "ERROR",
+            //        Errors = CustomValidator.GetErrorsByModel(ModelState)
+            //    };
+            //}
+
             if (string.IsNullOrEmpty(Name)
                 || string.IsNullOrEmpty(Email)
                 || string.IsNullOrEmpty(Password)
@@ -97,8 +108,22 @@ namespace AppZeroAPI.Controllers
                 Password = Password,
                 ConfirmPassword = ConfirmPassword,
             };
-            await authService.SignUp(model, Request.Headers["origin"]);
-            return AppResponse.Success("Registration successful, please check your email for verification instructions");
+            var result = await authService.SignUp(model, Request.Headers["origin"]);
+            // if (result != 1)
+            // {
+            //    var response =  new  
+            //    {
+            //        Message = "ERROR",
+            //        Status = 500,
+            //        Errors = CustomValidator.GetErrorsByIdentotyResult(result)
+            //    };
+            // }
+            var response = new
+            {
+                Status = 200,
+                Message = "OK"
+            };
+            return AppResponse.Success(response); 
         }
 
         [HttpPost("revoke-token")]

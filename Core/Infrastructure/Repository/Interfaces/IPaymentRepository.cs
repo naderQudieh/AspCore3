@@ -9,7 +9,7 @@ namespace AppZeroAPI.Interfaces
 {
     public interface IPaymentRepository   
     {
-        
+        Task<bool> UpdatePaymentStatus(string payment_id, string payment_status);
         Task<IEnumerable<Payment>> CreatePayment(IEnumerable<Payment> payment);
 
 

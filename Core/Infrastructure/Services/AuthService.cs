@@ -82,7 +82,7 @@ namespace AppZeroAPI.Services
         public async Task<ResponseAuthDto> RenewAccessToken(RequestAuthDto request, string ipAddress = "")
         {
             JwtSecurityToken decodedToken = this.tokenService.DecodeToken(request.RefreshToken);
-            var user = await this.unitOfWork.Users.GetByIdAsync(int.Parse(decodedToken.Subject));
+            var user = await this.unitOfWork.Users.GetByIdAsync(decodedToken.Subject);
             if (user == null)
                 throw new AppException("Invalid token.");
 
@@ -184,9 +184,8 @@ namespace AppZeroAPI.Services
 
         public async Task<bool> RevokeToken(string token)
         {
-            JwtSecurityToken decodedToken = this.tokenService.DecodeToken(token);
-            int userId = int.Parse(decodedToken.Id);
-            var user = await this.unitOfWork.Users.GetByIdAsync(userId);
+            JwtSecurityToken decodedToken = this.tokenService.DecodeToken(token); 
+            var user = await this.unitOfWork.Users.GetByIdAsync(decodedToken.Id);
             if (user == null)
                 throw new AppException("Invalid token.");
 

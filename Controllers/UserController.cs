@@ -40,22 +40,20 @@ namespace AppZeroAPI.Controllers
         }
 
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> deleteProfileId(int? id)
+        public async Task<IActionResult> deleteProfileId(string rec_id)
         {
-            if (id.HasValue)
-            {
-                var user = await unitOfWork.Users.DeleteByIdAsync(id.Value);
-            }
+             
+                var user = await unitOfWork.Users.DeleteByIdAsync(rec_id);
+            
             return AppResponse.Success();
         }
         // DELETE api/User
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(string rec_id)
         {
-            if (id.HasValue)
-            {
-                var user = await unitOfWork.Users.DeleteByIdAsync(id.Value);
-            }
+            
+                var user = await unitOfWork.Users.DeleteByIdAsync(rec_id);
+            
 
             return AppResponse.Success();
         }
@@ -120,7 +118,7 @@ namespace AppZeroAPI.Controllers
         [HttpGet("GetById/{id}", Name = "GetById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserProfile>> GetById(int id)
+        public async Task<ActionResult<UserProfile>> GetById(string id)
         {
             var data = await unitOfWork.Users.GetByIdAsync(id);
             if (data == null)

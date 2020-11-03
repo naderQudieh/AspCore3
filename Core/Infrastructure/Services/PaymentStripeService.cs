@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Stripe;
 using Stripe.Checkout;
-using AppZeroAPI.Interfaces;
 using AppZeroAPI.Shared.PayModel;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -66,7 +65,7 @@ namespace AppZeroAPI.Services
                     Source = stripeToken.Id,
                     Metadata = new Dictionary<string, string>
                     {
-                        { "OrderId", payModel.Order.order_id.ToString() },
+                        { "OrderId", payModel.Order.rec_id.ToString() },
                     },
                     ApplicationFeeAmount = GetShareAmount(payModel.value)
                 };
@@ -103,10 +102,27 @@ namespace AppZeroAPI.Services
             return await service.CreateAsync(accountId, options);
         }
 
+        private async Task<Customer> getOrCreateCustomer(string email)
+        {
 
+            var service = new Stripe.CustomerService();
+            var listOptions = new Stripe.CustomerListOptions
+            {
+                Limit = 1
+            };
+            listOptions.AddExtraParam("email", email);
+            var customer = (await service.ListAsync(listOptions)).Data.FirstOrDefault();
+            if (customer != null) return customer;
+
+            var customerCreateOptions = new Stripe.CustomerCreateOptions
+            {
+                Email = email
+            };
+            return await service.CreateAsync(customerCreateOptions);
+        }
         private async Task<Customer> CreateCustomerAsync(string token, string name, string email, string phone)
         {
-            var options = new CustomerCreateOptions
+            var options = new Stripe.CustomerCreateOptions
             {
                 Source = token,
                 Name = name,
@@ -114,7 +130,7 @@ namespace AppZeroAPI.Services
                 Phone = phone
             };
 
-            var service = new CustomerService();
+            var service = new Stripe.CustomerService();
             return await service.CreateAsync(options);
         }
 
@@ -127,7 +143,7 @@ namespace AppZeroAPI.Services
                 Phone = phone
             };
 
-            var service = new CustomerService();
+            var service = new Stripe.CustomerService();
             return await service.CreateAsync(options);
         }
 
@@ -145,14 +161,14 @@ namespace AppZeroAPI.Services
                 options.Email = email;
             }
 
-            var service = new CustomerService();
+            var service = new Stripe.CustomerService();
             return await service.UpdateAsync(customerId, options);
         }
 
         public async Task<StripeList<Card>> GetCardListAsync(string customerId)
         {
-            var service = new CardService();
-            var options = new CardListOptions
+            var service = new Stripe.CardService();
+            var options = new Stripe.CardListOptions
             {
                 Limit = 3,
             };
@@ -162,13 +178,13 @@ namespace AppZeroAPI.Services
 
         public async Task<StripeList<PaymentMethod>> GetPaymentMethodsAsync(string customerId)
         {
-            var options = new PaymentMethodListOptions
+            var options = new Stripe.PaymentMethodListOptions
             {
                 Customer = customerId,
                 Type = "card",
             };
 
-            var service = new PaymentMethodService();
+            var service = new Stripe.PaymentMethodService();
             return await service.ListAsync(options);
         }
 
@@ -178,7 +194,7 @@ namespace AppZeroAPI.Services
             {
                 Source = token,
             };
-            var service = new SourceService();
+            var service = new Stripe.SourceService();
             return await service.AttachAsync(customerId, options);
         }
 
@@ -197,25 +213,25 @@ namespace AppZeroAPI.Services
                 Metadata = metadata
             };
 
-            var service = new ChargeService();
+            var service = new Stripe.ChargeService();
             return await service.CreateAsync(options);
         }
 
         public async Task<Charge> CreateCaptureAsync(string chargeId, decimal amount, decimal applicationFeeAmount)
         {
-            var options = new ChargeCaptureOptions
+            var options = new Stripe.ChargeCaptureOptions
             {
                 Amount = (long)(amount * 100),
                 ApplicationFeeAmount = (long)(applicationFeeAmount * 100)
             };
 
-            var service = new ChargeService();
+            var service = new Stripe.ChargeService();
             return await service.CaptureAsync(chargeId, options);
         }
 
         public async Task<StripeList<Payout>> GetPayoutsAsync(string accountId)
         {
-            var payoutService = new PayoutService();
+            var payoutService = new Stripe.PayoutService();
 
             return await payoutService.ListAsync(new PayoutListOptions { Limit = 100 }, new RequestOptions { StripeAccount = accountId });
         }
@@ -225,8 +241,8 @@ namespace AppZeroAPI.Services
             var result = new List<string>();
 
             var balanceTransactionService = new BalanceTransactionService();
-            var chargeService = new ChargeService();
-            var transferService = new TransferService();
+            var chargeService = new Stripe.ChargeService();
+            var transferService = new Stripe.TransferService();
 
             var requestOptions = new RequestOptions { StripeAccount = accountId };
 
@@ -249,7 +265,7 @@ namespace AppZeroAPI.Services
                 Charge = chargeId,
             };
 
-            var service = new RefundService();
+            var service = new Stripe.RefundService();
             return await service.CreateAsync(options);
         }
 
@@ -262,13 +278,13 @@ namespace AppZeroAPI.Services
                 GrantType = "authorization_code"
             };
 
-            var service = new OAuthTokenService();
+            var service = new Stripe.OAuthTokenService();
             return await service.CreateAsync(options);
         }
 
         public Subscription Subscribe(string email, string name, string source, string monthlyPlanId, string overagePlanId)
         {
-            var customerService = new CustomerService();
+            var customerService = new Stripe.CustomerService();
             var customer = customerService.Create(new CustomerCreateOptions
             {
                 Email = email,
@@ -276,7 +292,7 @@ namespace AppZeroAPI.Services
                 Source = source
             });
 
-            var subscriptionService = new SubscriptionService();
+            var subscriptionService = new Stripe.SubscriptionService();
 
             var items = new List<SubscriptionItemOptions> {
                 new SubscriptionItemOptions { Plan = monthlyPlanId },
@@ -294,14 +310,14 @@ namespace AppZeroAPI.Services
 
         public Subscription GetSubscription(string subscriptionId)
         {
-            var subscriptionService = new SubscriptionService();
+            var subscriptionService = new Stripe.SubscriptionService();
 
             return subscriptionService.Get(subscriptionId);
         }
 
         public Invoice GetUpcomingInvoice(string customerId)
         {
-            var invoiceService = new InvoiceService();
+            var invoiceService = new Stripe.InvoiceService();
 
             var upcomingInvoiceOptions = new UpcomingInvoiceOptions()
             {
@@ -326,7 +342,7 @@ namespace AppZeroAPI.Services
 
         public Subscription Change(string subscriptionId, string subscriptionItemId, string overageSubscriptionItemId, string monthlyPlanId, string overagePlanId)
         {
-            var subscriptionService = new SubscriptionService();
+            var subscriptionService = new Stripe.SubscriptionService();
 
             var items = new List<SubscriptionItemOptions> {
                 new SubscriptionItemOptions {
@@ -384,7 +400,7 @@ namespace AppZeroAPI.Services
                 CancelUrl = cancelUrl
             };
 
-            var service = new SessionService();
+            var service = new  SessionService();
             return await service.CreateAsync(options);
         }
 
@@ -395,7 +411,7 @@ namespace AppZeroAPI.Services
             options.AddExpand("setup_intent");
             options.AddExpand("payment_intent");
 
-            var service = new SessionService();
+            var service = new  SessionService();
             return await service.GetAsync(sessionId, options);
         }
 
@@ -421,41 +437,41 @@ namespace AppZeroAPI.Services
                 OffSession = true
             };
 
-            var service = new PaymentIntentService();
+            var service = new Stripe.PaymentIntentService();
             return await service.CreateAsync(options);         
         }
 
         public async Task<Customer> GetCustomerAsync(string customerId)
         {
-            var service = new CustomerService();
+            var service = new Stripe.CustomerService();
 
             return await service.GetAsync(customerId);
         }
 
         public async Task<Account> GetAccountAsync(string accountId)
         {
-            var service = new AccountService();
+            var service = new Stripe.AccountService();
 
             return await service.GetAsync(accountId);
         }
 
         public async Task<PaymentIntent> GetPaymentIntentAsync(string paymentIntentId)
         {
-            var service = new PaymentIntentService();
+            var service = new Stripe.PaymentIntentService();
 
             return await service.GetAsync(paymentIntentId);
         }
 
         public async Task<PaymentMethod> GetPaymentMethodAsync(string paymentMethodId)
         {
-            var service = new PaymentMethodService();
+            var service = new Stripe.PaymentMethodService();
 
             return await service.GetAsync(paymentMethodId);
         }
 
         public async Task<PaymentMethod> DetachPaymentMethodAsync(string paymentMethodId)
         {
-            var service = new PaymentMethodService();
+            var service = new Stripe.PaymentMethodService();
 
             return await service.DetachAsync(paymentMethodId);
         }

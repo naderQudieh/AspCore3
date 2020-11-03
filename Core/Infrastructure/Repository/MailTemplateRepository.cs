@@ -34,7 +34,7 @@ namespace AppZeroAPI.Repository
             }
         }
 
-        public Task<bool> DeleteByIdAsync(long id)
+        public Task<bool> DeleteByIdAsync(string id)
         {
             throw new NotImplementedException();
         }
@@ -42,7 +42,7 @@ namespace AppZeroAPI.Repository
         {
             throw new NotImplementedException();
         }
-        public Task<MailTemplates> GetByIdAsync(long id)
+        public Task<MailTemplates> GetByIdAsync(string id)
         {
             throw new NotImplementedException();
         }

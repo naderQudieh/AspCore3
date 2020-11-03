@@ -185,6 +185,7 @@ namespace AppZeroAPI.Shared
         public const string Admin = "Admin";
         public const string User = "User";
         public const string Client = "Client";
+        public const string Member = "Member";
     }
     public enum AuthType
     {

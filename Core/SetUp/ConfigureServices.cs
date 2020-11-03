@@ -26,21 +26,27 @@ namespace AppZeroAPI.Setup
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IAuthService, AuthService>();
 
+           
             services.AddSingleton<PaymentBraintreeService>();
             services.AddSingleton<PaymentPaypalService>();
             services.AddSingleton<PaymentStripeService>();
-
+           
+           
         }
         public static void AddDataAccess(this IServiceCollection services)
-        {
+        { 
+         
+            services.AddScoped<IUnitOfWork, UnitOfWork>(); 
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IOrderRepository,  OrderRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<ILookupsRepository, LookupsRepository>();
+            services.AddScoped<IPaymentRepository,  PaymentRepository>();
+            services.AddScoped<ICustomerRepository,  CustomerRepository>();
 
-            services.TryAddTransient<IUnitOfWork, UnitOfWork>();
-            services.TryAddTransient<IProductRepository, ProductRepository>();
-            services.TryAddTransient<IUserRepository, UserRepository>();
-            services.TryAddTransient<IOrderRepository,  OrderRepository>();
-            services.AddTransient<ILookupsRepository, LookupsRepository>();
-            services.TryAddTransient<IPaymentRepository,  PaymentRepository>();
-            services.TryAddTransient<ICustomerRepository,  CustomerRepository>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<ICustomerService, CustomerService>();
         }
     }
 

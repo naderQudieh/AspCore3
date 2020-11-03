@@ -1,16 +1,21 @@
-﻿using System;
+﻿using AppZeroAPI.Entities;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace AppZeroAPI.Interfaces
 {
-    public interface IGenericRepository<TEntity> where TEntity : class
+  
+    public interface IGenericRepository<TEntity> where TEntity : BaseEntity
     {
-        Task<bool> DeleteByIdAsync(long id);
-        Task<IEnumerable<TEntity>> GetAllAsync();
-        Task<TEntity> GetByIdAsync(long id);
-        //Task<TEntity> GetByIdAsync(string id );
+        Task<TEntity> GetByIdAsync(string rec_id);
+        Task<bool> DeleteByIdAsync(string rec_id);
+        Task<IEnumerable<TEntity>> GetAllAsync(); 
+     
         Task<int> AddAsync(TEntity entity);
         Task<bool> UpdateAsync(TEntity entity);
        

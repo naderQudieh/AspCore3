@@ -10,6 +10,8 @@ namespace AppZeroAPI.Interfaces
         ICustomerRepository Customers { get; } 
         ILookupsRepository Lookups { get; }
         IPaymentRepository Payments { get; }
+
+        ICartRepository Carts { get; }
     }
 
 }

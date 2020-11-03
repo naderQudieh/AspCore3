@@ -65,6 +65,8 @@ namespace AppZeroAPI.Shared.PayModel
         public string AddressCity { get; set; }
         public string AddressState { get; set; }
         public string AddressZip { get; set; }
+        public string AddressCountry { get; set; }
+        public string Phone { get; set; }
     }
     
     public class PaymentModel

@@ -39,7 +39,7 @@ namespace AppZeroAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(string id)
         {
             var data = await unitOfWork.Products.GetByIdAsync(id);
             if (data == null)

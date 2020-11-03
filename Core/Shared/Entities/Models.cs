@@ -179,23 +179,8 @@ namespace AppZeroAPI.Models
 
 
 
-    public class LogData
-    {
-
-        public int Id { get; set; }
-
-        public string Category { get; set; }
-
-        public string Message { get; set; }
-
-        public string User { get; set; }
-
-        public int UserId { get; set; }
-        public DateTimeOffset? MessageOn { get; set; }
-    }
-
-
-
+   
+     
 
     [JsonConverter(typeof(StringEnumConverter))]
     public enum AuthStatus

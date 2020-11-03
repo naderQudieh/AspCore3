@@ -110,25 +110,25 @@ namespace AppZeroAPI.Repository
             }
         }
 
-        public async Task<UserProfile> GetByIdAsync(long user_id)
+        public async Task<UserProfile> GetByIdAsync(string rec_id)
         {
 
             var sql = "SELECT * FROM user_profiles WHERE user_id = @user_id";
             using (var connection = this.GetOpenConnection())
             {
 
-                var result = await connection.QuerySingleOrDefaultAsync<UserProfile>(sql, new { user_id = user_id });
+                var result = await connection.QuerySingleOrDefaultAsync<UserProfile>(sql, new { rec_id = rec_id });
                 return result;
             }
         }
 
-        public async Task<UserProfile> GetByUserIdAsync(string userid)
+        public async Task<UserProfile> GetByUserIdAsync(string rec_id)
         {
             var sql = "SELECT * FROM user_profiles WHERE userid = @userid";
             using (var connection = this.GetOpenConnection())
             {
 
-                var result = await connection.QuerySingleOrDefaultAsync<UserProfile>(sql, new { userid = userid });
+                var result = await connection.QuerySingleOrDefaultAsync<UserProfile>(sql, new { rec_id = rec_id });
                 return result;
             }
         }
@@ -217,7 +217,7 @@ namespace AppZeroAPI.Repository
         }
 
 
-        public async Task<bool> DeleteByIdAsync(long id)
+        public async Task<bool> DeleteByIdAsync(string rec_id)
         {
             //var sql = "delete from user_profiles WHERE user_id = @userid";
             //using (var connection = this.GetOpenConnection())
@@ -228,7 +228,7 @@ namespace AppZeroAPI.Repository
             //}
             using (var connection = this.GetOpenConnection())
             {
-                var result = await connection.DeleteAsync(new UserProfile { user_id = id });
+                var result = await connection.DeleteAsync(new UserProfile { rec_id = rec_id });
                 return result;
             }
         }

@@ -60,7 +60,7 @@ namespace AppZeroAPI.Shared.Enums
         Invoiced,
         Paid,
         Cancelled,
-        Refunded
+        Refunded 
     }
     public enum SiteUserLevelType
     {

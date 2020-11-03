@@ -18,8 +18,8 @@ namespace AppZeroAPI.Repository
     public class LookupsRepository : BaseRepository, ILookupsRepository
     {
        
-        private readonly ILogger<PaymentRepository> logger;
-        public LookupsRepository(IConfiguration configuration, ILogger<PaymentRepository> logger) : base(configuration)
+        private readonly ILogger<LookupsRepository> logger;
+        public LookupsRepository(IConfiguration configuration, ILogger<LookupsRepository> logger) : base(configuration)
         {
             this.logger = logger;
         }
@@ -57,7 +57,7 @@ namespace AppZeroAPI.Repository
         }
 
 
-        public Task<bool> DeleteByIdAsync(long id)
+        public Task<bool> DeleteByIdAsync(string id)
         {
             throw new NotImplementedException();
         }
@@ -65,7 +65,7 @@ namespace AppZeroAPI.Repository
         {
             throw new NotImplementedException();
         }
-        public Task<LookUps> GetByIdAsync(long id)
+        public Task<LookUps> GetByIdAsync(string id)
         {
             throw new NotImplementedException();
         }

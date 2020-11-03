@@ -63,7 +63,7 @@ namespace AppZeroAPI.Services
             };
             var purchaseUnitRequest = new PurchaseUnitRequest
             {
-                InvoiceId = order.order_id.ToString(),
+                InvoiceId = order.rec_id.ToString(),
                 AmountWithBreakdown = new AmountWithBreakdown
                 {
                     Value = order.order_total.ToString("f2", CultureInfo.InvariantCulture),

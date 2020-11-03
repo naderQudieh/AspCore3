@@ -13,7 +13,9 @@ namespace AppZeroAPI.Setup
         {
             // c.IncludeXmlComments(string.Format(@"{0}\AppZeroAPI.AppZeroAPI.xml", System.AppDomain.CurrentDomain.BaseDirectory));
             services.AddSwaggerGen(c =>
-            {
+            { 
+                
+                c.CustomSchemaIds(type => type.ToString());
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "eProdaja", Version = "v1" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

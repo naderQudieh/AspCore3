@@ -102,6 +102,17 @@ namespace AppZeroAPI.Repository
             }
         }
 
+
+        public async Task<bool> UpdatePaymentStatus(string payment_id, string payment_status)
+        { 
+            var sql = @"UPDATE customer_payments SET  payment_status = @payment_status  WHERE rec_id = @payment_id";
+            using (var connection = this.GetOpenConnection())
+            {
+                int rows = await connection.ExecuteAsync(sql, new { payment_id = payment_id, payment_status= payment_status });
+                return rows != 0;
+            }
+        }
+
         public async Task<bool> UpdateAsync(CustomerCreditCard entity)
         {
             entity.date_modified = DateTime.UtcNow;

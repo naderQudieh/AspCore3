@@ -7,41 +7,58 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AppZeroAPI.Entities
-{ 
-    public class BaseEntity 
-    {
-        [Key]
-        public Int32? Id { get; set; }
-
-        public DateTime CreatedDate { get; set; }
-
-        public Int32? CreatedBy { get; set; }
-
-
-        public Int32? ModifiedBy { get; set; }
-
-        public DateTime ModifiedDate { get; set; }
-    }
+{
     
- 
+    public class BaseEntity
+    {
+        
+        [Dapper.Contrib.Extensions.ExplicitKey] 
+        [System.ComponentModel.DataAnnotations.KeyAttribute] 
+        [Column("rec_id")]
+        [JsonProperty("rec_id")]
+        public string rec_id { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "date_created")]
+        public DateTime date_created { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "date_modified")] 
+        public DateTime date_modified { get; set; }
+        public BaseEntity()
+        {
+            rec_id = Guid.NewGuid().ToString().ToLower().Replace("-","");
+        }
+    }
+
+    public class LogData : BaseEntity
+    {
+
+        public int Id { get; set; }
+
+        public string Category { get; set; }
+
+        public string Message { get; set; }
+
+        public string User { get; set; }
+
+        public int UserId { get; set; }
+        public DateTimeOffset? MessageOn { get; set; }
+    }
     public class MailTemplates : BaseEntity
     {
         public MailTemplates()
         {
 
         }
-        public MailTemplates(Int32? id, string name, string description, string templateData, string subject
+        public MailTemplates(Int32? id, string? rec_id, string name, string description, string templateData, string subject
             , int? createdBy, int? modifiedBy, DateTime createdDate, DateTime modifiedDate, int templateType)
         {
-            this.Id = id;
+            
             this.Name = name;
             this.Description = description;
             this.TemplateData = templateData;
-            this.Subject = subject;
-            this.CreatedBy = createdBy;
-            this.ModifiedBy = modifiedBy;
-            this.CreatedDate = createdDate;
-            this.ModifiedDate = modifiedDate;
+            this.Subject = subject; 
+            this.date_created = createdDate;
+            this.date_modified = modifiedDate;
             this.TemplateType = templateType;
         }
         public string Name { get; set; }
@@ -52,77 +69,84 @@ namespace AppZeroAPI.Entities
         public string Subject { get; set; }
         public int TemplateType { get; set; }
     }
-    public class LookUps
+    public class LookUps:BaseEntity
     {
         public string code { get; set; }
         public string value { get; set; }
     }
 
     [Table("customer_carts")]
-    public class CustomerCart
+    public class CustomerCart : BaseEntity
     {
-        public string cart_id { get; set; }
-        public long customer_id { get; set; }
+        
+        public string customer_id { get; set; }
         public decimal cart_total { get; set; }
         public decimal cart_discount { get; set; }
         public decimal total_payable { get; set; }
-        public string cart_status { get; set; }
+        public string cart_status { get; set; } 
+        public string paymentIntentId { get; set; }
+        public int? deliveryMethodId { get; set; }
+        public string client_secret { get; set; }
 
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
         public Customer customer { get; set; }
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
         public List<CartItem> cartItems { get; set; }
+
     }
 
     [Table("customer_cart_items")]
-    public class CartItem
+    public class CartItem : BaseEntity
     {
         public string cart_id { get; set; }
-        public long product_id { get; set; }
+        public string product_id { get; set; }
         public decimal qty { get; set; }
         public decimal price { get; set; }
         public decimal discount { get; set; }
-        public decimal price_to_pay { get; set; }
+        public decimal total_payable { get; set; }
 
         public string discount_description { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+      
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
         public virtual Product Product { get; set; }
+ 
     }
     [Table("customers")]
-    public class Customer
-    {
-        public long customer_id { get; set; }
+    public class Customer : BaseEntity
+    {  
         public string first_name { get; set; }
         public string last_name { get; set; }
         public string email { get; set; }
         public string contact_phone { get; set; }
-        public string contact_mobile { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+        public string contact_mobile { get; set; } 
+ 
     }
     [Table("customer_order_items")]
-    public class CustomerOrderItem
-    {
-        public long order_id { get; set; }
-        public long product_id { get; set; }
+    public class CustomerOrderItem : BaseEntity
+    {  
+        public string order_id { get; set; }
+        public string product_id { get; set; }
         public long qty { get; set; }
         public decimal price { get; set; }
         public decimal discount { get; set; }
         public decimal total_payable { get; set; }
 
         public string discount_description { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
         public virtual Product Product { get; set; }
+
+       
     }
     [Table("customer_orders")]
-    public class CustomerOrder
-    {
-        public long order_id { get; set; }
-        public long customer_id { get; set; }
+    public class CustomerOrder : BaseEntity
+    {   
+        public string customer_id { get; set; }
         public long shipping_address_id { get; set; }
-        public long payment_id { get; set; }
+        public string payment_id { get; set; }
         public decimal order_total { get; set; }
  
         public decimal discount_amount { get; set; }
@@ -131,51 +155,62 @@ namespace AppZeroAPI.Entities
         public OrderStatus Status { get; set; } = OrderStatus.Draft;
         public string confirm_no { get; set; }
         public string PaypalToken { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+      
         public string PaymentProviderSessionId { get; set; }
+
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
         public virtual List<CustomerOrderItem> orderItems { get; set; }
+
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
         public virtual Customer customer { get; set; }
         public virtual PaymentProviderType PaymentProvider { get; set; }
-        
+       
         //public Address ship_to { get; set; }
         //public Address bill_to { get; set; }
 
 
     }
-    public class Address
-    {
-        public long address_id { get; set; }
-        public string address1 { get; set; }
-        public string address2 { get; set; }
-        public string city { get; set; }
-        public string state { get; set; }
-        public string zip { get; set; }
-        public string zip4 { get; set; }
-        public string country { get; set; }
-        public string phone { get; set; }
-        public string mobile { get; set; }
-        public string type { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+
+    [Table("products")]
+    public class Product : BaseEntity
+    { 
+        public string name { get; set; }
+        public string description { get; set; }
+        public string barcode { get; set; }
+        public string imge_url { get; set; }
+        public int qty_in_stock { get; set; }
+        public float unit_price { get; set; }
+        public int department_id { get; set; }
+
     }
-    
-    public class PurchaseData
+
+    [Table("customer_payments")]
+    public class Payment : BaseEntity
     {
-        public string payment_method_nonce;
-        public string client_token;
-        public decimal amount;
-    }
+
+        public string card_id { get; set; }
+        public string customer_id { get; set; }
+        public string order_id { get; set; }
+        public PaymentMethod payment_method { get; set; }
+        public long amount { get; set; }
+        public string payment_status { get; set; }
+        public DateTime payment_date { get; set; }
+        public string currency { get; set; }
+        public string reference_id { get; set; }
+        public string response_code { get; set; }
+
+        //public CustomerCreditCard cardused { get; set; }
+        //public CustomerBank bankused { get; set; }
+    } 
+   
     [Table("customer_cards")]
-    public class CustomerCreditCard
-    {
-        [Key]
-        [Required]
-        [Column("card_id")]
-        [JsonProperty("card_id")]
+    public class CustomerCreditCard : BaseEntity
+    { 
         public string card_id { get; set; }
         public string cardtype { get; set; }
-        public long customer_id { get; set; }
+        public string customer_id { get; set; }
         public string first_name { get; set; }
         public string last_name { get; set; }
         public string card_holder_name { get; set; }
@@ -194,53 +229,50 @@ namespace AppZeroAPI.Entities
         public string country { get; set; }
         public string phone { get; set; }
         public string mobile { get; set; }
-        public DateTime date_created { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "date_modified")]
-        public DateTime date_modified { get; set; }
+     
 
     }
 
     [Table("customers_bank")]
-    public class CustomerBank
+    public class CustomerBank : BaseEntity
     {
-        public long customer_id { get; set; }
+        public string customer_id { get; set; }
         public string bank_routing_number { get; set; }
         public string bank_account_number { get; set; }
         public string bank_check_number { get; set; } 
         public string bank_name { get; set; } 
         public Address billing_address { get; set; }  
-        public DateTime date_created { get; set; } 
-        public DateTime date_modified { get; set; }
+        
 
     }
-    [Table("customer_payments")]
-    public class Payment
+
+    public class Address : BaseEntity
     {
-        [Key]
-        [Required]
-        [Column("payment_id")]
-        [JsonProperty("payment_id")]
-        public string payment_id { get; set; }
-        public long customer_id { get; set; }
-        public int order_id { get; set; }
-        public PaymentMethod payment_method { get; set; } 
-        public CustomerCreditCard cardused { get; set; }
-        public CustomerBank bankused { get; set; }
-        public long amount { get; set; }
-        public string payment_status { get; set; }
-        public DateTime payment_date { get; set; }
-        public string currency { get; set; }
-        public string reference_id { get; set; }
-        public string response_code { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
+        public string addressid { get; set; }
+        public string address_id { get; set; }
+        public string address1 { get; set; }
+        public string address2 { get; set; }
+        public string city { get; set; }
+        public string state { get; set; }
+        public string zip { get; set; }
+        public string zip4 { get; set; }
+        public string country { get; set; }
+        public string phone { get; set; }
+        public string mobile { get; set; }
+        public string type { get; set; }
+
 
     }
 
-
+    public class PurchaseData
+    {
+        public string payment_method_nonce;
+        public string client_token;
+        public decimal amount;
+    }
 
     [Table("user_tokens")]
-    public class UserTokenData
+    public class UserTokenData : BaseEntity
     {
         [Column("token_id")]
         public int TokenId { get; set; }
@@ -309,13 +341,9 @@ namespace AppZeroAPI.Entities
     }
 
     [Table("user_profiles")]
-    public class UserProfile
+    public class UserProfile : BaseEntity
     {
-        [Dapper.Contrib.Extensions.Key]
-        [Key]
-        [Required]
-        [Column("user_id")]
-        [JsonProperty("user_id")]
+       
         public long user_id { get; set; }
 
         [Column("username")]
@@ -351,12 +379,14 @@ namespace AppZeroAPI.Entities
 
         [Column("profile_picture")]
         public string profile_picture { get; set; }
+       
 
     }
 
     [Table("user_refresh_tokens")]
-    public class UserToken
+    public class UserToken : BaseEntity
     {
+        
         [JsonProperty("user_id")]
         public long UserId { get; set; }
 
@@ -383,27 +413,12 @@ namespace AppZeroAPI.Entities
         [Column("is_active")]
         [JsonProperty("is_active")]
         public bool IsActive { get; set; }
+
+       
     }
 
 
-    [Table("products")]
-    public class Product
-    {
-        [Dapper.Contrib.Extensions.Key]
-        [Column("product_Id")]
-        [JsonProperty("product_Id")]
-        public long product_Id { get; set; }
-        public string name { get; set; }
-        public string description { get; set; }
-        public string barcode { get; set; }
-        public string imge_url { get; set; }
-        public int qty_in_stock { get; set; }
-        public float unit_price { get; set; }
-        public int department_id { get; set; }
-        public DateTime date_created { get; set; }
-        public DateTime date_modified { get; set; }
-
-    }
+  
     public class Detect
     {
         [Dapper.Contrib.Extensions.Key]
