@@ -243,12 +243,9 @@ namespace AppZeroAPI.Controllers
                 return Ok(charge);
             }
             catch (Exception ex)
-            {
-
+            { 
                 return BadRequest();
-            }
-           
-            
+            } 
         }
        
         [HttpPost("RegisterCard")]

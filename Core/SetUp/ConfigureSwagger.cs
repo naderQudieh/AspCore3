@@ -16,7 +16,7 @@ namespace AppZeroAPI.Setup
             { 
                 
                 c.CustomSchemaIds(type => type.ToString());
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "eProdaja", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AppZeroCore3.1", Version = "v1" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
