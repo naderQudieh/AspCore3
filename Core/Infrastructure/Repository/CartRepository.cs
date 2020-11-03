@@ -144,7 +144,7 @@ namespace AppZeroAPI.Repository
 
         }
 
-        public async Task<CustomerCart> GetCustomerCartAndCartItems(string customer_id, bool includeItems = false)
+        public async Task<CustomerCart> GetCustomerCartDetails(string customer_id, bool includeItems = false)
         {
             using (var connection = this.GetOpenConnection())
             {
@@ -214,6 +214,18 @@ namespace AppZeroAPI.Repository
             }
         }
 
+        public async Task<bool> DeleteCustomerCart(string rec_id)
+        {
+
+            var sql = "delete from customer_carts_items  WHERE cart_id = @cart_id; delete from customer_carts WHERE cart_id = @rec_id;  ";
+            using (var connection = this.GetOpenConnection())
+            {
+                var rows = await connection.ExecuteAsync(sql, new { rec_id = rec_id });
+                return rows != 0;
+            } 
+            
+        }
+
         public async Task<int> DeleteCartByCustomerId(string rec_id)
         {
             var sql = "delete from customer_cart  WHERE customer_id = @customer_id;   ";
@@ -238,6 +250,15 @@ namespace AppZeroAPI.Repository
             using (var connection = this.GetOpenConnection())
             {
                 var result = await connection.ExecuteAsync(sql, new { cart_id = cart_id, cart_item_id = cart_item_id });
+                return result;
+            }
+        }
+        public async Task<int> DeleteCartItems(string cart_id )
+        {
+            var sql = "delete from customer_carts_items  WHERE cart_id = @cart_id ";
+            using (var connection = this.GetOpenConnection())
+            {
+                var result = await connection.ExecuteAsync(sql, new { cart_id = cart_id  });
                 return result;
             }
         }

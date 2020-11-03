@@ -49,11 +49,11 @@ namespace AppZeroAPI.Services
 
         public async Task<CustomerCart> GetCartForCustomer(string customer_id)
         {
-            return await unitOfWork.Carts.GetCustomerCartAndCartItems(customer_id, false);
+            return await unitOfWork.Carts.GetCustomerCartDetails(customer_id, false);
         }
         public async Task<CustomerCart> GetCartDetailsForCustomer(string customer_id)
         {
-            return await unitOfWork.Carts.GetCustomerCartAndCartItems(customer_id, true);
+            return await unitOfWork.Carts.GetCustomerCartDetails(customer_id, true);
         }
         public async Task<bool> UpdateCart(CustomerCart cart)
         {

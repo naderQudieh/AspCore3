@@ -19,9 +19,9 @@ using AppZeroAPI.Shared.PayModel;
 using AppZeroAPI.Entities;
 using System.Text.Json;
 using PaymentMethod = Stripe.PaymentMethod;
-using Customer = AppZeroAPI.Entities.Customer;
 using Order = Stripe.Order ;
 using CustomerService = Stripe.CustomerService;
+using AppZeroAPI.Shared;
 
 namespace AppZeroAPI.Controllers
 {
@@ -46,77 +46,7 @@ namespace AppZeroAPI.Controllers
             this.unitOfWork = unitOfWork;
             //this.stripeService = stripeService;
         }
-         
- 
 
-        [HttpPost("Processing")]
-        public async Task<IActionResult> ProcessingAsync()
-        {
-
-            PayModel paymodel = getPayModel();
-            var tokenoptions = new TokenCreateOptions
-            {
-                Card = new TokenCardOptions
-                {
-                    AddressLine1 = paymodel.AddressLine1,
-                    AddressLine2 = paymodel.AddressLine2,
-                    AddressCity = paymodel.AddressCity,
-                    AddressState = paymodel.AddressState,
-                    AddressZip = paymodel.AddressZip,
-                    Name = paymodel.Name,
-                    Number = paymodel.CardNumder,
-                    ExpMonth = paymodel.ExpMonth,
-                    ExpYear = paymodel.ExpYear,
-                    Cvc = paymodel.CVC
-                },
-            };
-
-            var serviceToken = new Stripe.TokenService();
-            Token stripeToken = await serviceToken.CreateAsync(tokenoptions);
-
-
-            paymodel.OrderName = "OrderName";
-            paymodel.OrderDescription = "OrderDescription";
-            paymodel.StripeToken = stripeToken.Id;
-            var Metadata = new Dictionary<string, string>
-            {
-                { "Name", paymodel.OrderName },
-                {"Price", paymodel.Amount.ToString() },
-                {"Description", paymodel.OrderDescription }
-            };
-
-
-            var chargeOptions = new ChargeCreateOptions
-            {
-
-                Amount = paymodel.Amount,
-                Currency = "USD",
-                Description = $"Buying {paymodel.OrderName} {paymodel.OrderDescription}",
-                Source = new AnyOf<string, CardCreateNestedOptions>(paymodel.StripeToken),
-                ReceiptEmail = paymodel.Email,
-                Metadata = Metadata
-            };
-            var chargeService = new ChargeService();
-            Charge charge = chargeService.Create(chargeOptions);
-
-            //foreach (var product in model.Products)
-            //{
-            //    ProductModel correctProduct = await _productsService.RetrieveAsync(product.Id);
-            //    if (correctProduct != product)
-            //    {
-            //        throw new CustomServerException("invalid order data");
-            //    }
-
-
-            //    product.Id = default(int);
-            //    await CreateOrderAsync(product);
-
-            //    var transaction = new TransactionModel { Currency = charge.Currency, Amount = charge.Amount, Status = charge.Status, Created = charge.Created, Description = charge.Description, Object = charge.Object, SourceId = charge.Source.Id };
-            //    await _transactionsService.CreateAsync(transaction);
-            //}
-            var response = await Task.FromResult(charge);
-            return Ok(response);
-        }
        
         [HttpPost("CreateCardPaymentMethod")]
         public async Task<IActionResult> CreateCardPaymentMethod()
@@ -322,9 +252,9 @@ namespace AppZeroAPI.Controllers
         }
        
         [HttpPost("RegisterCard")]
-        public async Task<IActionResult> RegisterCard(Customer customer)
+        public async Task<IActionResult> RegisterCard(AppZeroAPI.Entities.Customer customer)
         {
-            var customerId = customer.rec_id;  
+            var customerId = customer.rec_id ;  
             var options = new SetupIntentCreateOptions
             {
                 Customer = customerId.ToString(),

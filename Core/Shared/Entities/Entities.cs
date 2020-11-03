@@ -86,7 +86,17 @@ namespace AppZeroAPI.Entities
         public string cart_status { get; set; } 
         public string paymentIntentId { get; set; }
         public int? deliveryMethodId { get; set; }
+        
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)] 
         public string client_secret { get; set; }
+
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)] 
+        public string stripeToken { get; set; }
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)] 
+        public string stripeEmail { get; set; }
 
         [NotMapped]
         [Dapper.Contrib.Extensions.Write(false)]
@@ -102,7 +112,7 @@ namespace AppZeroAPI.Entities
     {
         public string cart_id { get; set; }
         public string product_id { get; set; }
-        public decimal qty { get; set; }
+        public int qty { get; set; }
         public decimal price { get; set; }
         public decimal discount { get; set; }
         public decimal total_payable { get; set; }
@@ -129,7 +139,7 @@ namespace AppZeroAPI.Entities
     {  
         public string order_id { get; set; }
         public string product_id { get; set; }
-        public long qty { get; set; }
+        public int qty { get; set; }
         public decimal price { get; set; }
         public decimal discount { get; set; }
         public decimal total_payable { get; set; }
@@ -181,7 +191,7 @@ namespace AppZeroAPI.Entities
         public string barcode { get; set; }
         public string imge_url { get; set; }
         public int qty_in_stock { get; set; }
-        public float unit_price { get; set; }
+        public decimal unit_price { get; set; }
         public int department_id { get; set; }
 
     }
