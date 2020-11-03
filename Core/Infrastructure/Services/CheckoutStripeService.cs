@@ -42,7 +42,7 @@ namespace AppZeroAPI.Services
             request.RequestBody(CreateOrderRequest(order));
             var response = await m_PayPalHttpClient.Execute(request);
             var order2 = response.Result<PayPalCheckoutSdk.Orders.Order>();
-            order.PaypalToken = order2.Id;
+            order.paypal_token  = order2.Id;
             var link = order2.Links.Single(link => link.Rel == "approve");
             return link.Href;
         }

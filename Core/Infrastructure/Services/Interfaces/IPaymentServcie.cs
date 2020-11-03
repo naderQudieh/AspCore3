@@ -1,4 +1,5 @@
 ﻿using AppZeroAPI.Entities;
+using AppZeroAPI.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace AppZeroAPI.Services
     public interface IPaymentService
     {
         Task<CustomerCart> CreateOrUpdatePaymentIntent(string customerId);
-        Task<bool> updateOrderPaymentfailed(string paymentId);
-        Task<bool> updateOrderPaymentSucceeded(string paymentId);
+        Task<bool> UpdateOrderStatus(string order_id, OrderStatus order_status);
+        Task<bool> UpdateOrderPaymentStatus(string paymentIntentId, OrderPaymentStatus order_payment_status);
     }
 }

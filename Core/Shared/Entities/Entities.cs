@@ -164,8 +164,9 @@ namespace AppZeroAPI.Entities
         public string order_status { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Draft;
         public string confirm_no { get; set; }
-        public string PaypalToken { get; set; }
-      
+
+        public OrderPaymentStatus order_pymnt_status { get; set; } = OrderPaymentStatus.NotKnown;
+
         public string PaymentProviderSessionId { get; set; }
 
         [NotMapped]
@@ -176,7 +177,12 @@ namespace AppZeroAPI.Entities
         [Dapper.Contrib.Extensions.Write(false)]
         public virtual Customer customer { get; set; }
         public virtual PaymentProviderType PaymentProvider { get; set; }
-       
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
+        public string paypal_token { get; set; }
+        [NotMapped]
+        [Dapper.Contrib.Extensions.Write(false)]
+        public string paymentIntentId { get; set; }
         //public Address ship_to { get; set; }
         //public Address bill_to { get; set; }
 

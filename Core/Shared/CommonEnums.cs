@@ -4,6 +4,7 @@ using System.Text;
 using System.ComponentModel;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace AppZeroAPI.Shared.Enums
 {
@@ -62,6 +63,7 @@ namespace AppZeroAPI.Shared.Enums
         Cancelled,
         Refunded 
     }
+
     public enum SiteUserLevelType
     {
         [Description("AdminUser")]
@@ -93,7 +95,20 @@ namespace AppZeroAPI.Shared.Enums
         [Description("Check")]
         Check = 12,
     }
+    public enum OrderPaymentStatus
+    {
+        [EnumMember(Value = "Not Known")]
+        NotKnown,
 
+        [EnumMember(Value = "Pending")]
+        Pending,
+
+        [EnumMember(Value = "Payment Received")]
+        PaymentReceived,
+
+        [EnumMember(Value = "Payment Failed")]
+        PaymentFailed,
+    }
     public enum PaymentStatusType
     {
         [Description("Purchase")]

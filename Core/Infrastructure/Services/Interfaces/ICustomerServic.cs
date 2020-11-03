@@ -1,4 +1,5 @@
 ﻿using AppZeroAPI.Entities;
+using AppZeroAPI.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,8 @@ namespace AppZeroAPI.Services
 {
     public interface ICustomerService
     {
-        Task<bool> UpdatePaymentStatus(string payment_id, string payment_status);
+        Task<bool> UpdateOrderStatus(string order_id, OrderStatus order_status);
+        Task<bool> UpdateOrderPaymentStatus(string paymentIntentId, OrderPaymentStatus order_payment_status);
         Task<CustomerCart> GetCartForCustomer(string customer_id );
         Task<CustomerCart> GetCartDetailsForCustomer(string customer_id);
         Task<IEnumerable<CustomerOrder>> GetOrdersForCustomer(string customer_id);

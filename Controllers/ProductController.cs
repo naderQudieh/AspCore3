@@ -50,20 +50,21 @@ namespace AppZeroAPI.Controllers
             return AppResponse.Success(data);
         }
 
-
-        //[HttpPost]
-        //public async Task<IActionResult> Add(Models.Product product)
-        //{
-        //    var data = await unitOfWork.Products.AddAsync(product);
-        //    return AppResponse.Success(data);
-        //}
-        [HttpDelete]
+        [HttpPost("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             await Task.Delay(3000);
             //await unitOfWork.Products.DeleteByIdAsync(id);
             return AppResponse.Success();
         }
+
+        //[HttpDelete]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    await Task.Delay(3000);
+        //    //await unitOfWork.Products.DeleteByIdAsync(id);
+        //    return AppResponse.Success();
+        //}
 
         [HttpPost] 
         public async Task<IActionResult> AddProduct(Entities.Product product )

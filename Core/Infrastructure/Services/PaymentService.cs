@@ -82,15 +82,15 @@ namespace AppZeroAPI.Services
 
             return basket;
         }
+         
 
-        public async Task<bool> updateOrderPaymentfailed(string  paymentId)
-        { 
-            return await customerService.UpdatePaymentStatus(paymentId, PaymentStatus.Failure.ToString()); 
-        }
-
-        public async Task<bool> updateOrderPaymentSucceeded(string paymentId)
+        public async Task<bool> UpdateOrderPaymentStatus(string paymentIntentId, OrderPaymentStatus order_payment_status)
         {
-            return await customerService.UpdatePaymentStatus(paymentId, PaymentStatus.Paid.ToString());
+            return await customerService.UpdateOrderPaymentStatus(paymentIntentId, order_payment_status);
+        } 
+        public async Task<bool> UpdateOrderStatus(string order_Id, OrderStatus order_status)
+        {
+            return await customerService.UpdateOrderStatus(order_Id, order_status);
         }
         
     }

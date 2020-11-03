@@ -3,6 +3,7 @@ using AppZeroAPI.Interfaces;
 using AppZeroAPI.Models;
 using AppZeroAPI.Repository;
 using AppZeroAPI.Shared;
+using AppZeroAPI.Shared.Enums;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -33,11 +34,15 @@ namespace AppZeroAPI.Services
             
         }
 
-
-        public async Task<bool> UpdatePaymentStatus(string payment_id, string payment_status)
+        public async Task<bool>  UpdateOrderStatus(string order_id, OrderStatus order_status)
         {
-            return await unitOfWork.Payments.UpdatePaymentStatus(payment_id, payment_status);
+            return await unitOfWork.Orders.UpdateOrderStatus(order_id, order_status);
         }
+        public async Task<bool> UpdateOrderPaymentStatus(string paymentIntentId, OrderPaymentStatus order_payment_status)
+        {
+            return await unitOfWork.Orders.UpdateOrderPaymentStatus(paymentIntentId, order_payment_status);
+        }
+
         public async Task<IEnumerable<CustomerOrder>> GetOrdersForCustomer(string customer_id)
         {
             return await unitOfWork.Orders.GetOrdersForCustomer(customer_id);

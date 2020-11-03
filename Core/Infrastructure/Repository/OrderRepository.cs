@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using AppZeroAPI.Shared.Enums;
 
 namespace AppZeroAPI.Repository
 {
@@ -128,14 +129,24 @@ namespace AppZeroAPI.Repository
                 return isSuucess;
             }
 
-        } 
+        }
 
-        public async Task<bool> UpdateOrderStatus(string order_id, string order_status)
-        { 
+        public async Task<bool> UpdateOrderPaymentStatus(string paymentIntentId, OrderPaymentStatus order_pymnt_status)
+        {
+            var sql = @"UPDATE customer_orders SET  order_pymnt_status = @order_pymnt_status  WHERE paymentIntentId = @paymentIntentId";
+            using (var connection = this.GetOpenConnection())
+            {
+                int rows = await connection.ExecuteAsync(sql, new { order_pymnt_status = order_pymnt_status.ToString(), paymentIntentId = paymentIntentId });
+                return rows != 0;
+            }
+        }
+        public async Task<bool> UpdateOrderStatus(string order_id, OrderStatus order_status)
+        {
+            
             var sql = @"UPDATE customer_orders SET  order_status = @order_status  WHERE rec_id = @order_id";
             using (var connection = this.GetOpenConnection())
             {
-                int rows = await connection.ExecuteAsync(sql, new { order_id = order_id, order_status = order_status });
+                int rows = await connection.ExecuteAsync(sql, new { order_id = order_id, order_status = order_status.ToString() });
                 return rows != 0;
             }
         }
